@@ -1,25 +1,10 @@
-import express from "express";
-import driver from "../db/neo4jDriver.js";
+// usersController.js
+import driver from "../../db/neo4jDriver.js";
 import bcrypt from "bcrypt";
+import { v4 as uuidv4 } from 'uuid';
+// import { isValidEmail, isValidUsername, isValidPassword } from "./usersValidation.js";
 
-const usersRoutes = express.Router();
-
-function isValidUsername(username) {
-    const usernameRegex = /^[a-zA-Z0-9_-]{1,20}$/;
-    return usernameRegex.test(username);
-}
-
-function isValidEmail(email) {
-    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
-    return emailRegex.test(email);
-}
-
-function isValidPassword(password) {
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    return passwordRegex.test(password);
-}
-
-usersRoutes.post('/api/users/register', async (req, res) => {
+export const registerUser = async (req, res) => {
     const { username, email, password } = req.body;
     const session = driver.session();
 
@@ -39,9 +24,8 @@ usersRoutes.post('/api/users/register', async (req, res) => {
     }
 
     try {
-
         const hashedPassword = await bcrypt.hash(password, 10);
-        
+
         const checkEmailResult = await session.run(
             'MATCH (user:User {email: $email}) RETURN user',
             { email }
@@ -63,8 +47,8 @@ usersRoutes.post('/api/users/register', async (req, res) => {
         }
 
         const result = await session.run(
-            'CREATE (user:User {username: $username, email: $email, password: $password}) RETURN user',
-            { username, email, password: hashedPassword }
+            'CREATE (user:User {userId: $userId, username: $username, email: $email, password: $password}) RETURN user',
+            { userId: uuidv4(), username, email, password: hashedPassword }
         );
 
         const newUser = result.records[0].get('user').properties;
@@ -75,14 +59,13 @@ usersRoutes.post('/api/users/register', async (req, res) => {
     } finally {
         await session.close();
     }
-});
+};
 
-usersRoutes.post('/api/users/login', async (req, res) => {
+export const loginUser = async (req, res) => {
     const { username, password } = req.body;
+    const session = driver.session();
 
     try {
-        const session = driver.session();
-
         const userResult = await session.run(
             'MATCH (user:User {username: $username}) RETURN user',
             { username }
@@ -109,7 +92,20 @@ usersRoutes.post('/api/users/login', async (req, res) => {
     } finally {
         await session.close();
     }
-});
+}
 
+// usersValidation.js
+export const isValidUsername = (username) => {
+    const usernameRegex = /^[a-zA-Z0-9_-]{1,20}$/;
+    return usernameRegex.test(username);
+};
 
-export default usersRoutes;
+export const isValidEmail = (email) => {
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+    return emailRegex.test(email);
+};
+
+export const isValidPassword = (password) => {
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    return passwordRegex.test(password);
+};
