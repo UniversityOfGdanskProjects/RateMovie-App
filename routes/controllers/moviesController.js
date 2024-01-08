@@ -1,4 +1,9 @@
 import driver from "../../db/neo4jDriver.js";
+import { config } from 'dotenv';
+import { authorizeUser } from "../../middleware/authorization.js";
+
+config()
+const { TMDB_API_KEY, JWT_SECRET } = process.env
 
 export const getMovies = async (req, res) => {
     const session = driver.session();
@@ -149,22 +154,95 @@ export const searchMoviesByDirectorOrActor = async (req, res) => {
     }
 };
 
-// export const searchMoviesByDirectorOrActor = async (req, res) => {
-//     const searchTerm = req.params.searchTerm;
-//     const session = driver.session();
-//     console.log(searchTerm)
+export const rateMovie = async (req, res) => {
+    authorizeUser(req, res, async () => {
+      const { movieId, rating, review } = req.body;
+      console.log(req.user)
+      const userId = req.user.userId;
+  
+      const session = driver.session();
+  
+      try {
+        const existingReviewResult = await session.run(
+          'MATCH (u:User {userId: $userId})-[r:REVIEWED]->(m:Movie {movieId: $movieId}) RETURN r',
+          { userId, movieId }
+        );
+  
+        if (existingReviewResult.records.length > 0) {
+          res.status(400).json({ error: 'You have already reviewed this movie' });
+          return;
+        }
+        const today = new Date();
+        const currentDate = today.toISOString().split('T')[0];
 
+        const result = await session.run(
+          'MATCH (u:User {id: $userId}), (m:Movie {movieId: $movieId}) ' +
+          'CREATE (u)-[r:REVIEWED {rating: $rating, review: $review, date: $date}]->(m) ' +
+          'RETURN r',
+          { userId, movieId, rating, review, date: currentDate }
+        );
+  
+        const newReview = result.records[0].get('r').properties;
+        res.status(201).json({ message: 'Review added successfully', review: newReview });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal Server Error' });
+      } finally {
+        await session.close();
+      }
+    });
+  };
+
+// export const addMovieFromTmdbById = async (req, res) => {
+//     console.log(TMDB_API_KEY)
+//     const {id} = req.body;
+//     console.log(id)
+//     const session = driver.session();
 //     try {
-//         const result = await session.executeRead(tx => tx.run(`
-//             MATCH (m:Movie)<-[:DIRECTED| :ACTED_IN]-(p: Person)
-//             WHERE p.name =~ '(?i).*${searchTerm}.*'
-//             RETURN m LIMIT 20
-//         `, {}));
+//         const result = await session.run(`
+//             WITH $id as movieId, "${TMDB_API_KEY}" as tmdbApiKey
+//             CALL apoc.load.json('https://api.themoviedb.org/3/movie/' + movieId + '?api_key=' 
+//                 + tmdbApiKey + '&append_to_response=credits,videos,images') YIELD value
+            
+//             MERGE (m:Movie {id: value.id})
+//             ON CREATE SET 
+//                 m.overview = value.overview,
+//                 m.original_language = value.original_language,
+//                 m.original_title = value.original_title,
+//                 m.runtime = value.runtime,
+//                 m.title = value.title,
+//                 m.poster_path = value.poster_path,
+//                 m.backdrop_path = value.backdrop_path,
+//                 m.release_date = value.release_date,
+//                 m.tagline = value.tagline,
+//                 m.budget = value.budget,
+//                 m.images = [backdrop IN value.images.backdrops | backdrop.file_path],
+//                 m.trailers = [video IN value.videos.results WHERE video.site = 'YouTube' AND video.type = 'Trailer' | video.key]
+            
+//             FOREACH (director IN value.credits.crew | 
+//                 FOREACH (_ IN CASE WHEN director.job = "Director" THEN [1] ELSE [] END |
+//                     MERGE (p:Person:Director {id: director.id})
+//                     ON CREATE SET p.name = director.name, p.profile_path = director.profile_path
+//                     MERGE (m)<-[:DIRECTED]-(p)
+//                 )
+//             )
+            
+//             WITH value.credits.cast AS cast, m
+//             UNWIND cast AS actorData
+//             WITH actorData, m
+//             LIMIT 15
+//             MERGE (a:Person:Actor {id: actorData.id})
+//             ON CREATE SET a.name = actorData.name, a.profile_path = actorData.profile_path
+//             MERGE (m)<-[r:ACTED_IN]-(a)
+//             ON CREATE SET r.character = actorData.character
+
+//             RETURN m
+//         `, { id });
 
 //         const data = result.records.map(record => record.toObject());
 //         res.json(data);
 //     } catch (error) {
-//         console.error('Error searching movies by director/actor:', error);
+//         console.error('Error retrieving popular movies:', error);
 //         res.status(500).json({ error: 'Internal Server Error' });
 //     } finally {
 //         await session.close();

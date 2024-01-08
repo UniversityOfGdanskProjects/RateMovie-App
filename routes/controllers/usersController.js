@@ -2,6 +2,7 @@
 import driver from "../../db/neo4jDriver.js";
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from 'uuid';
+import { authenticateJWT, generateToken } from '../../middleware/authentication.js';
 // import { isValidEmail, isValidUsername, isValidPassword } from "./usersValidation.js";
 
 export const registerUser = async (req, res) => {
@@ -85,7 +86,10 @@ export const loginUser = async (req, res) => {
             return;
         }
 
-        res.status(200).json({ message: 'Login successful' });
+        res.status(200).json({
+            message: 'Login successful',
+            token: generateToken(userResult.records[0].get('user').properties.userId),
+          });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Internal Server Error' });
@@ -94,7 +98,6 @@ export const loginUser = async (req, res) => {
     }
 }
 
-// usersValidation.js
 export const isValidUsername = (username) => {
     const usernameRegex = /^[a-zA-Z0-9_-]{1,20}$/;
     return usernameRegex.test(username);
