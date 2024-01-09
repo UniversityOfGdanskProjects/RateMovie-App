@@ -15,10 +15,10 @@ const moviesRoutes = express.Router();
 
 moviesRoutes.route('/api/movies').get(getMovies);
 moviesRoutes.route('/api/movies/popular').get(getPopularMovies);
-moviesRoutes.route('/api/movie/:id').get(getMovieById);
+moviesRoutes.route('/api/movies/:movieId').get(getMovieById);
 moviesRoutes.route('/api/movies/search').get(searchMovies);
 moviesRoutes.route('/api/movies/searchByActorOrDirector').get(searchMoviesByDirectorOrActor);
-moviesRoutes.route('/api/movies/rate').post(rateMovie);
+moviesRoutes.route('/api/movies/:movieId/rate').post(rateMovie);
 
 // moviesRoutes.route('/api/movies/addTmdbMovie').get(addMovieFromTmdbById)
 

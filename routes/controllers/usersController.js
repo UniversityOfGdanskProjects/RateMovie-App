@@ -2,7 +2,7 @@
 import driver from "../../db/neo4jDriver.js";
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from 'uuid';
-import { authenticateJWT, generateToken } from '../../middleware/authentication.js';
+import { loginRequired, generateToken } from '../../middleware/auth.js';
 // import { isValidEmail, isValidUsername, isValidPassword } from "./usersValidation.js";
 
 export const registerUser = async (req, res) => {
@@ -85,10 +85,12 @@ export const loginUser = async (req, res) => {
             res.status(401).json({ error: 'Invalid username or password' });
             return;
         }
+        // -------------------------------------------------------
+        // console.log(userResult.records[0].get('user').properties)
 
         res.status(200).json({
             message: 'Login successful',
-            token: generateToken(userResult.records[0].get('user').properties.userId),
+            // token: generateToken(userResult.records[0].get('user').properties),
           });
     } catch (error) {
         console.error(error);

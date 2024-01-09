@@ -1,6 +1,8 @@
 import driver from "../../db/neo4jDriver.js";
 import { config } from 'dotenv';
-import { authorizeUser } from "../../middleware/authorization.js";
+// import { authorizeUser } from "../../middleware/authorization.js";
+// import { loginRequired } from "../../middleware/auth.js";
+
 
 config()
 const { TMDB_API_KEY, JWT_SECRET } = process.env
@@ -46,7 +48,7 @@ export const getPopularMovies = async (req, res) => {
 };
 
 export const getMovieById = async (req, res) => {
-    const id = parseInt(req.params.id);
+    const id = req.params.movieId;
     const session = driver.session();
     try {
         const result = await session.executeRead(tx => tx.run('MATCH (n:Movie {id: $id}) RETURN n', { id: id }));
@@ -154,44 +156,48 @@ export const searchMoviesByDirectorOrActor = async (req, res) => {
     }
 };
 
-export const rateMovie = async (req, res) => {
-    authorizeUser(req, res, async () => {
-      const { movieId, rating, review } = req.body;
-      console.log(req.user)
-      const userId = req.user.userId;
-  
-      const session = driver.session();
-  
-      try {
-        const existingReviewResult = await session.run(
-          'MATCH (u:User {userId: $userId})-[r:REVIEWED]->(m:Movie {movieId: $movieId}) RETURN r',
-          { userId, movieId }
-        );
-  
-        if (existingReviewResult.records.length > 0) {
-          res.status(400).json({ error: 'You have already reviewed this movie' });
-          return;
-        }
-        const today = new Date();
-        const currentDate = today.toISOString().split('T')[0];
 
-        const result = await session.run(
-          'MATCH (u:User {id: $userId}), (m:Movie {movieId: $movieId}) ' +
-          'CREATE (u)-[r:REVIEWED {rating: $rating, review: $review, date: $date}]->(m) ' +
-          'RETURN r',
-          { userId, movieId, rating, review, date: currentDate }
+export const rateMovie = async (req, res) => {
+    const movieId = req.params.movieId;
+    const { userId, rating, review } = req.body;
+    const session = driver.session();
+
+    try {
+        const result = await session.run(`
+            MATCH (u:User {userId: $userId})
+            MATCH (m:Movie {id: $movieId})
+            OPTIONAL MATCH (u)-[r:REVIEWED]->(m)
+            WITH u, m, r
+            CALL apoc.do.when( r IS NOT NULL,
+                'MATCH (u)-[r:REVIEWED]->(m)
+                SET r.rating = newRating, r.review = newReview, r.date = newDate
+                RETURN r AS review, false AS created',
+
+                'CREATE (u)-[r:REVIEWED {rating: newRating, review: newReview, date: newDate}]->(m)
+                RETURN r AS review, true AS created',
+                {newRating: $rating, newReview: $review, newDate: $date}
+            )
+            YIELD value 
+            RETURN value.review AS review, value.created AS created`,
+            { userId, movieId, rating, review, date: new Date().toISOString().split('T')[0] }
         );
-  
-        const newReview = result.records[0].get('r').properties;
-        res.status(201).json({ message: 'Review added successfully', review: newReview });
-      } catch (error) {
+
+        const created = result.records[0].get('created');
+        const newReview = result.records[0].get('review').properties;
+
+        if (created) {
+            res.status(201).json({ message: 'Review added successfully', review: newReview });
+        } else {
+            res.status(200).json({ message: 'Review updated successfully', review: newReview });
+        }
+
+    } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Internal Server Error' });
-      } finally {
+    } finally {
         await session.close();
-      }
-    });
-  };
+    }
+};
 
 // export const addMovieFromTmdbById = async (req, res) => {
 //     console.log(TMDB_API_KEY)
