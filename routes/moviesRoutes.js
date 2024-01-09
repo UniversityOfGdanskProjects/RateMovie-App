@@ -7,7 +7,12 @@ import {
     getMovieById, 
     searchMovies, 
     searchMoviesByDirectorOrActor,
-    rateMovie
+    rateMovie,
+    commentMovie,
+    addMovieToFavourites,
+    addMovieToIgnored,
+    addMovieToWatchlist,
+    addMovieToFollowed
     // addMovieFromTmdbById
  } from "./controllers/moviesController.js";
 
@@ -19,6 +24,11 @@ moviesRoutes.route('/api/movies/:movieId').get(getMovieById);
 moviesRoutes.route('/api/movies/search').get(searchMovies);
 moviesRoutes.route('/api/movies/searchByActorOrDirector').get(searchMoviesByDirectorOrActor);
 moviesRoutes.route('/api/movies/:movieId/rate').post(rateMovie);
+moviesRoutes.route('/api/movies/:movieId/comment').post(commentMovie);
+moviesRoutes.route('/api/movies/:movieId/addToFavourites').post(addMovieToFavourites);
+moviesRoutes.route('/api/movies/:movieId/addToIgnored').post(addMovieToIgnored);
+moviesRoutes.route('/api/movies/:movieId/addToWatchlist').post(addMovieToWatchlist);
+moviesRoutes.route('/api/movies/:movieId/addToFollowed').post(addMovieToFollowed);
 
 // moviesRoutes.route('/api/movies/addTmdbMovie').get(addMovieFromTmdbById)
 

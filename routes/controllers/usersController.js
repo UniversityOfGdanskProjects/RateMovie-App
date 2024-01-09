@@ -2,7 +2,7 @@
 import driver from "../../db/neo4jDriver.js";
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from 'uuid';
-import { loginRequired, generateToken } from '../../middleware/auth.js';
+// import { loginRequired, generateToken } from '../../middleware/auth.js';
 // import { isValidEmail, isValidUsername, isValidPassword } from "./usersValidation.js";
 
 export const registerUser = async (req, res) => {

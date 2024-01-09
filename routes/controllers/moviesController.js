@@ -1,5 +1,7 @@
 import driver from "../../db/neo4jDriver.js";
 import { config } from 'dotenv';
+import { checkNodeExistence,
+     checkRelationshipExistence } from "../../helpers/checkExistence.js";
 // import { authorizeUser } from "../../middleware/authorization.js";
 // import { loginRequired } from "../../middleware/auth.js";
 
@@ -198,6 +200,194 @@ export const rateMovie = async (req, res) => {
         await session.close();
     }
 };
+
+export const commentMovie = async (req, res) => {
+    const movieId = req.params.movieId;
+    const { userId, comment } = req.body;
+
+    const session = driver.session();
+
+    try {
+        const userExists = await checkNodeExistence(session, 'User', 'userId', userId);
+        const movieExists = await checkNodeExistence(session, 'Movie', 'id', movieId);
+
+        if (!userExists || !movieExists) {
+            res.status(404).json({ error: 'User or Movie not found' });
+            return;
+        }
+
+        const query = `
+            MATCH (u:User {userId: $userId})
+            MATCH (m:Movie {id: $movieId})
+            CREATE (u)-[r:COMMENTED {comment: $comment, date: $date}]->(m)
+            RETURN r
+        `;
+
+        const result = await session.executeWrite(tx => tx.run(query, {
+            userId,
+            movieId,
+            comment,
+            date: new Date().toISOString().split('T')[0],
+        }));
+
+        const createdRelationship = result.records[0].get('r').properties;
+        res.status(200).json(createdRelationship);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        await session.close();
+    }
+};
+
+export const addMovieToFavourites = async (req, res) => {
+    const movieId = req.params.movieId;
+    const { userId } = req.body;
+    const session = driver.session();
+
+    try {
+        const userExists = await checkNodeExistence(session, 'User', 'userId', userId);
+        const movieExists = await checkNodeExistence(session, 'Movie', 'id', movieId);
+
+        if (!userExists || !movieExists) {
+            res.status(404).json({ error: 'User or Movie not found' });
+            return;
+        }
+
+        const relationshipExists = await checkRelationshipExistence(session, 'User', 'userId', userId, 'FAVOURITES', 'Movie', 'id', movieId);
+
+        if (relationshipExists) {
+            res.status(400).json({ error: 'Relationship already exists' });
+            return;
+        }
+
+        const query = `
+            MATCH (u:User {userId: $userId}) MATCH (m:Movie {id: $movieId})
+            CREATE (u)-[r:FAVOURITES]->(m)
+            RETURN r
+        `;
+
+        const result = await session.executeRead(tx => tx.run(query, { userId, movieId }));
+        res.status(200).json(result.records[0].get('r').properties);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        await session.close();
+    }
+};
+
+export const addMovieToIgnored = async (req, res) => {
+    const movieId = req.params.movieId;
+    const { userId } = req.body;
+    const session = driver.session();
+
+    try {
+        const userExists = await checkNodeExistence(session, 'User', 'userId', userId);
+        const movieExists = await checkNodeExistence(session, 'Movie', 'id', movieId);
+
+        if (!userExists || !movieExists) {
+            res.status(404).json({ error: 'User or Movie not found' });
+            return;
+        }
+
+        const relationshipExists = await checkRelationshipExistence(session, 'User', 'userId', userId, 'IGNORES', 'Movie', 'id', movieId);
+
+        if (relationshipExists) {
+            res.status(400).json({ error: 'Relationship already exists' });
+            return;
+        }
+
+        const query = `
+            MATCH (u:User {userId: $userId}) MATCH (m:Movie {id: $movieId})
+            CREATE (u)-[r:IGNORES]->(m)
+            RETURN r
+        `;
+
+        const result = await session.executeRead(tx => tx.run(query, { userId, movieId }));
+        res.status(200).json(result.records[0].get('r').properties);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        await session.close();
+    }
+};
+
+export const addMovieToWatchlist = async (req, res) => {
+    const movieId = req.params.movieId;
+    const { userId } = req.body;
+    const session = driver.session();
+
+    try {
+        const userExists = await checkNodeExistence(session, 'User', 'userId', userId);
+        const movieExists = await checkNodeExistence(session, 'Movie', 'id', movieId);
+
+        if (!userExists || !movieExists) {
+            res.status(404).json({ error: 'User or Movie not found' });
+            return;
+        }
+
+        const relationshipExists = await checkRelationshipExistence(session, 'User', 'userId', userId, 'ADDED_TO_WATCHLIST', 'Movie', 'id', movieId);
+
+        if (relationshipExists) {
+            res.status(400).json({ error: 'Relationship already exists' });
+            return;
+        }
+
+        const query = `
+            MATCH (u:User {userId: $userId}) MATCH (m:Movie {id: $movieId})
+            CREATE (u)-[r:ADDED_TO_WATCHLIST]->(m)
+            RETURN r
+        `;
+
+        const result = await session.executeRead(tx => tx.run(query, { userId, movieId }));
+        res.status(200).json(result.records[0].get('r').properties);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        await session.close();
+    }
+};
+
+export const addMovieToFollowed = async (req, res) => {
+    const movieId = req.params.movieId;
+    const { userId } = req.body;
+    const session = driver.session();
+
+    try {
+        const userExists = await checkNodeExistence(session, 'User', 'userId', userId);
+        const movieExists = await checkNodeExistence(session, 'Movie', 'id', movieId);
+
+        if (!userExists || !movieExists) {
+            res.status(404).json({ error: 'User or Movie not found' });
+            return;
+        }
+
+        const relationshipExists = await checkRelationshipExistence(session, 'User', 'userId', userId, 'FOLLOWED', 'Movie', 'id', movieId);
+
+        if (relationshipExists) {
+            res.status(400).json({ error: 'Relationship already exists' });
+            return;
+        }
+
+        const query = `
+            MATCH (u:User {userId: $userId}) MATCH (m:Movie {id: $movieId})
+            CREATE (u)-[r:FOLLOWED]->(m)
+            RETURN r
+        `;
+
+        const result = await session.executeRead(tx => tx.run(query, { userId, movieId }));
+        res.status(200).json(result.records[0].get('r').properties);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        await session.close();
+    }
+};
+
 
 // export const addMovieFromTmdbById = async (req, res) => {
 //     console.log(TMDB_API_KEY)
