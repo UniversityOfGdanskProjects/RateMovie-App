@@ -13,8 +13,22 @@ const { TMDB_API_KEY, JWT_SECRET } = process.env
 export const getMovies = async (req, res) => {
     const session = driver.session();
     try {
-        const result = await session.executeRead(tx => tx.run('MATCH (n:Movie) RETURN n LIMIT 10'));
-        const data = result.records.map(record => record.get(0).properties);
+        const result = await session.executeRead(tx => tx.run(`
+            MATCH (m:Movie)
+            OPTIONAL MATCH (m)<-[:DIRECTED]-(director:Person)
+            OPTIONAL MATCH (m)<-[:ACTED_IN]-(actor:Person)
+            RETURN m, COLLECT(DISTINCT director) AS directors, COLLECT(DISTINCT actor) AS actors
+            LIMIT 10
+        `));
+
+        const data = result.records.map(record => {
+            const movie = record.get('m').properties;
+            const directors = record.get('directors').map(director => director.properties);
+            const actors = record.get('actors').map(actor => actor.properties);
+
+            return { ...movie, directors, actors };
+        });
+
         res.json(data);
     } catch (error) {
         console.error('Error retrieving movies:', error);
@@ -29,8 +43,10 @@ export const getPopularMovies = async (req, res) => {
     try {
         const result = await session.executeRead(tx => tx.run(`
             MATCH (u:User)-[r:REVIEWED]->(m:Movie)
-            WITH m, COUNT(r) AS numberOfReviews
-            RETURN m, numberOfReviews
+            OPTIONAL MATCH (m)<-[:DIRECTED]-(director:Person)
+            OPTIONAL MATCH (m)<-[:ACTED_IN]-(actor:Person)
+            WITH m, COUNT(r) AS numberOfReviews, COLLECT(DISTINCT director) AS directors, COLLECT(DISTINCT actor) AS actors
+            RETURN m, numberOfReviews, directors, actors
             ORDER BY numberOfReviews DESC
             LIMIT 10
         `));
@@ -38,7 +54,10 @@ export const getPopularMovies = async (req, res) => {
         const data = result.records.map(record => {
             const movie = record.get('m').properties;
             const numberOfReviews = record.get('numberOfReviews').toNumber();
-            return { ...movie, numberOfReviews };
+            const directors = record.get('directors').map(director => director.properties);
+            const actors = record.get('actors').map(actor => actor.properties);
+
+            return { ...movie, numberOfReviews, directors, actors };
         });
 
         res.json(data);
@@ -54,11 +73,21 @@ export const getMovieById = async (req, res) => {
     const id = req.params.movieId;
     const session = driver.session();
     try {
-        const result = await session.executeRead(tx => tx.run('MATCH (n:Movie {id: $id}) RETURN n', { id: id }));
+        const result = await session.executeRead(tx => tx.run(`
+            MATCH (n:Movie {id: $id})
+            OPTIONAL MATCH (n)<-[:DIRECTED]-(director:Person)
+            OPTIONAL MATCH (n)<-[:ACTED_IN]-(actor:Person)
+            RETURN n, COLLECT(DISTINCT director) AS directors, COLLECT(DISTINCT actor) AS actors
+        `, { id: id }));
+
         if (result.records.length === 0) {
             res.status(404).json({ error: 'Movie not found' });
         } else {
-            const data = result.records[0].get('n').properties
+            const movie = result.records[0].get('n').properties;
+            const directors = result.records[0].get('directors').map(director => director.properties);
+            const actors = result.records[0].get('actors').map(actor => actor.properties);
+
+            const data = { ...movie, directors, actors };
             res.json(data);
         }
     } catch (error) {
@@ -71,28 +100,47 @@ export const getMovieById = async (req, res) => {
 
 const buildQueryWhere = (conditions) => {
     const conditionsArray = Object.entries(conditions)
-        .filter(([key, value]) => value !== undefined)
+        .filter(([key, value]) => value !== undefined && value !== '')
         .map(([key, value]) => `(${value})`);
 
     return conditionsArray.length > 0 ? ` WHERE ${conditionsArray.join(' AND ')}` : '';
 };
 
-const buildQuery = ({ title, genre, rating, year, sortBy, sortOrder, name}) => {
+const buildQuery = ({ title, genre, rating, year, sortBy, sortOrder, name, userId}) => {
+
     const queryMatch = name ? 
-        'MATCH (g:Genre)<-[:IN_GENRE]-(m:Movie)<-[:DIRECTED| :ACTED_IN]-(p: Person) OPTIONAL MATCH (u:User)-[r:REVIEWED]->(m)'
+        `MATCH (g:Genre)<-[:IN_GENRE]-(m:Movie)<-[:DIRECTED| :ACTED_IN]-(p: Person) 
+        OPTIONAL MATCH (m)<-[:DIRECTED]-(director:Person)
+        OPTIONAL MATCH (m)<-[:ACTED_IN]-(actor:Person)
+        OPTIONAL MATCH (u:User)-[r:REVIEWED]->(m) 
+        OPTIONAL MATCH (u2: User {userId: "${userId}"})-[ignores:IGNORES]->(m)`
         :
-        'MATCH (g:Genre)<-[:IN_GENRE]-(m:Movie) OPTIONAL MATCH (u:User)-[r:REVIEWED]->(m)';
+        `MATCH (g:Genre)<-[:IN_GENRE]-(m:Movie)
+        OPTIONAL MATCH (m)<-[:DIRECTED]-(director:Person)
+        OPTIONAL MATCH (m)<-[:ACTED_IN]-(actor:Person)
+        OPTIONAL MATCH (u:User)-[r:REVIEWED]->(m) 
+        OPTIONAL MATCH (u2: User {userId: "${userId}"})-[ignores:IGNORES]->(m)`;
+
     const queryWith = name ? 
-        ' WITH m, g, AVG(r.rating) AS avgRating, COUNT(r) AS popularity, p'
+        ` WITH m, g, ignores, p, 
+        AVG(r.rating) AS avgRating, 
+        COUNT(r) AS popularity,
+        director, 
+        actor`
         :
-        ' WITH m, g, AVG(r.rating) AS avgRating, COUNT(r) AS popularity'
+        ` WITH m, g, ignores,
+        AVG(r.rating) AS avgRating, 
+        COUNT(r) AS popularity,
+        director, 
+        actor`
         ;
     const conditions = {
-        title: title && `(m.title =~ '(?i).*${title}.*' OR m.original_title =~ '(?i).*${title}.*')`,
-        rating: rating && `(avgRating >= $rating AND avgRating <= $rating + 1)`,
-        genre: genre && `(g.name = $genre)`,
-        year: year && `(m.release_date STARTS WITH $year)`,
-        name: name && `p.name =~ '(?i).*${name}.*'`
+        title: title && `m.title =~ '(?i).*${title}.*' OR m.original_title =~ '(?i).*${title}.*'`,
+        rating: rating && `avgRating >= $rating AND avgRating <= $rating + 1`,
+        genre: genre && `g.name = $genre`,
+        year: year && `m.release_date STARTS WITH $year`,
+        name: name && `p.name =~ '(?i).*${name}.*'`,
+        userId: userId && 'ignores IS NULL'
     };
     const queryWhere = buildQueryWhere(conditions);
 
@@ -103,17 +151,26 @@ const buildQuery = ({ title, genre, rating, year, sortBy, sortOrder, name}) => {
         )
         : '';
 
-    const queryReturn = ' RETURN DISTINCT m, avgRating, popularity';
+    const queryReturn = ' RETURN m, COLLECT(DISTINCT director) AS directors, COLLECT(DISTINCT actor) AS actors';
 
     return `${queryMatch}${queryWith}${queryWhere}${queryReturn}${orderQuery}`;
 };
 
 export const searchMovies = async (req, res) => {
-    const { title, genre, rating, year, sortBy, sortOrder } = req.body;
+    const { title, genre, rating, year, sortBy, sortOrder, userId } = req.body;
     const session = driver.session();
+    
+    if (userId) {
+        const userExists = await checkNodeExistence(session, 'User', 'userId', userId);
+
+        if (!userExists) {
+            res.status(404).json({ error: 'User not found' });
+            return;
+        }
+    }
 
     try {
-        const query = buildQuery({ title, genre, rating, year, sortBy, sortOrder });
+        const query = buildQuery({ title, genre, rating, year, sortBy, sortOrder, userId });
         console.log(query);
 
         const result = await session.executeRead(tx => tx.run(query, {
@@ -123,7 +180,14 @@ export const searchMovies = async (req, res) => {
             year: year
         }));
 
-        const data = result.records.map(record => record.toObject());
+        const data = result.records.map(record => {
+            const movie = record.get('m').properties;
+            const directors = record.get('directors').map(director => director.properties);
+            const actors = record.get('actors').map(actor => actor.properties);
+
+            return { ...movie, directors, actors };
+        });
+
         res.json(data);
     } catch (error) {
         console.error('Error searching movies:', error);
@@ -134,11 +198,20 @@ export const searchMovies = async (req, res) => {
 };
 
 export const searchMoviesByDirectorOrActor = async (req, res) => {
-    const { name, genre, rating, year, sortBy, sortOrder } = req.body;
+    const { name, genre, rating, year, sortBy, sortOrder, userId } = req.body;
     const session = driver.session();
 
+    if (userId) {
+        const userExists = await checkNodeExistence(session, 'User', 'userId', userId);
+
+        if (!userExists) {
+            res.status(404).json({ error: 'User not found' });
+            return;
+        }
+    }
+
     try {
-        const query = buildQuery({ name, genre, rating, year, sortBy, sortOrder })
+        const query = buildQuery({ name, genre, rating, year, sortBy, sortOrder, userId })
         console.log(query);
 
         const result = await session.executeRead(tx => tx.run(query, {
@@ -148,7 +221,14 @@ export const searchMoviesByDirectorOrActor = async (req, res) => {
             year: year
         }));
 
-        const data = result.records.map(record => record.toObject());
+        const data = result.records.map(record => {
+            const movie = record.get('m').properties;
+            const directors = record.get('directors').map(director => director.properties);
+            const actors = record.get('actors').map(actor => actor.properties);
+
+            return { ...movie, directors, actors };
+        });
+
         res.json(data);
     } catch (error) {
         console.error('Error searching movies by director/actor:', error);
@@ -157,6 +237,7 @@ export const searchMoviesByDirectorOrActor = async (req, res) => {
         await session.close();
     }
 };
+
 
 
 export const rateMovie = async (req, res) => {
@@ -173,6 +254,20 @@ export const rateMovie = async (req, res) => {
     }
 
     try {
+        const isInWatchlistResult = await session.run(`
+            MATCH (u:User {userId: $userId})-[:ADDED_TO_WATCHLIST]->(m:Movie {id: $movieId})
+            RETURN COUNT(m) > 0 AS isInWatchlist
+        `, { userId, movieId });
+
+        const isInWatchlist = isInWatchlistResult.records[0].get('isInWatchlist');
+
+        if (isInWatchlist) {
+            await session.run(`
+                MATCH (u:User {userId: $userId})-[r:ADDED_TO_WATCHLIST]->(m:Movie {id: $movieId})
+                DELETE r
+            `, { userId, movieId });
+        }
+
         const result = await session.run(`
             MATCH (u:User {userId: $userId})
             MATCH (m:Movie {id: $movieId})
@@ -194,14 +289,16 @@ export const rateMovie = async (req, res) => {
             { userId, movieId, rating, review, date: new Date().toISOString().split('T')[0] }
         );
 
-        const created = result.records[0].get('created');
-        const newReview = result.records[0].get('review').properties;
+    const created = result.records[0].get('created');
+    const newReview = result.records[0].get('review').properties;
 
-        if (created) {
-            res.status(201).json({ message: 'Review added successfully', review: newReview });
-        } else {
-            res.status(200).json({ message: 'Review updated successfully', review: newReview });
-        }
+    const successMessage = created ? 'Review added successfully' : 'Review updated successfully';
+    const watchlistMessage = isInWatchlist ? 'Movie removed from watchlist.' : '';
+
+    res.status(created ? 201 : 200).json({
+        message: `${successMessage} ${watchlistMessage}`,
+        review: newReview
+    });
 
     } catch (error) {
         console.error(error);
@@ -266,8 +363,6 @@ export const addMovieToWatchlist = async (req, res) => {
 export const addMovieToFollowed = async (req, res) => {
     await addMovieToAction(req, res, 'FOLLOWED');
 };
-
-
 
 
 // export const addMovieFromTmdbById = async (req, res) => {

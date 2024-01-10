@@ -41,7 +41,6 @@ export const addMovieToAction = async (req, res, actionType) => {
 
 export const getMoviesByRelation = async (req, res, relationType) => {
     const { userId } = req.body;
-    console.log(userId)
     const session = driver.session();
 
     try {
@@ -53,12 +52,20 @@ export const getMoviesByRelation = async (req, res, relationType) => {
 
         const query = `
             MATCH (u:User {userId: $userId})-[:${relationType}]->(m:Movie)
-            RETURN m
+            OPTIONAL MATCH (m)<-[:DIRECTED]-(director:Person)
+            OPTIONAL MATCH (m)<-[:ACTED_IN]-(actor:Person)
+            RETURN m, COLLECT(DISTINCT director) AS directors, COLLECT(DISTINCT actor) AS actors
         `;
 
         const result = await session.run(query, { userId });
-        const movies = result.records.map(record => record.get('m').properties);
-        res.status(200).json({ count: movies.length, movies });
+        const data = result.records.map(record => {
+            const movie = record.get('m').properties;
+            const directors = record.get('directors').map(director => director.properties);
+            const actors = record.get('actors').map(actor => actor.properties);
+            return { ...movie, directors, actors };
+        });
+
+        res.status(200).json({ count: data.length, movies: data });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Internal Server Error' });
