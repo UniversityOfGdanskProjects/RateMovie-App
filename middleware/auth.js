@@ -1,37 +1,36 @@
-// import jwt from 'jsonwebtoken';
-// import { config } from 'dotenv';
+import jwt from 'jsonwebtoken';
+import { config } from 'dotenv';
 
-// config()
+config();
+const { JWT_SECRET } = process.env;
 
-// const { JWT_SECRET } = process.env
+export const generateToken = (userId, isAdmin = false) => {
+    const token = jwt.sign(
+        { userId, isAdmin },
+        JWT_SECRET,
+        { expiresIn: '1h' }
+    );
+    return token;
+};
 
-// export const loginRequired = (req, res, next) => {
-//   const token = req.headers.authorization;
+export const authenticateAdmin = (req, res, next) => {
+    const token = req.headers.authorization.split(' ')[1];
+    console.log(token)
 
-//   if (!token) {
-//       console.log("brak tokena")
-//       return null;
-//   }
+    if (!token) {
+        return res.status(401).json({ error: 'Unauthorized - Missing Token' });
+    }
 
-//   try {
-//       const decoded = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] });
+    jwt.verify(token, JWT_SECRET, (err, decoded) => {
+        if (err) {
+            return res.status(401).json({ error: 'Unauthorized - Invalid Token' });
+        }
 
-//       return decoded.userId;
-//   } catch (error) {
-//       console.error(error);
-//       return null;
-//   }
-// };
+        if (!decoded.isAdmin) {
+            return res.status(403).json({ error: 'Forbidden - Admin privileges required' });
+        }
 
-// export const generateToken = (userId) => {
-//   return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '1h', algorithm: 'HS256' });
-// };
-
-// export const authorizeUser = (req, res, next) => {
-//   authenticateJWT(req, res, (err) => {
-//     if (err) {
-//       return res.status(401).json({ error: 'Unauthorized' });
-//     }
-//     next();
-//   });
-// };
+        req.AdminId = decoded.userId;
+        next();
+    });
+};

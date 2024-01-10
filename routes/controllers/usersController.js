@@ -1,26 +1,15 @@
-// usersController.js
 import driver from "../../db/neo4jDriver.js";
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from 'uuid';
-// import { loginRequired, generateToken } from '../../middleware/auth.js';
-// import { isValidEmail, isValidUsername, isValidPassword } from "./usersValidation.js";
+import { isValidEmail, isValidUsername, isValidPassword } from "../../helpers/validation.js";
+import { checkNodeExistence } from "../../helpers/checkExistence.js";
 
 export const registerUser = async (req, res) => {
     const { username, email, password } = req.body;
     const session = driver.session();
 
-    if (!isValidEmail(email)) {
-        res.status(400).json({ error: 'Invalid email format' });
-        return;
-    }
-
-    if (!isValidUsername(username)) {
-        res.status(400).json({ error: 'Invalid username format' });
-        return;
-    }
-
-    if (!isValidPassword(password)) {
-        res.status(400).json({ error: 'Invalid password format' });
+    if (!isValidEmail(email) || !isValidUsername(username) || !isValidPassword(password)) {
+        res.status(400).json({ error: 'Invalid input format' });
         return;
     }
 
@@ -48,7 +37,7 @@ export const registerUser = async (req, res) => {
         }
 
         const result = await session.run(
-            'CREATE (user:User {userId: $userId, username: $username, email: $email, password: $password}) RETURN user',
+            'CREATE (user:User {userId: $userId, username: $username, email: $email, password: $password, isAdmin: false}) RETURN user',
             { userId: uuidv4(), username, email, password: hashedPassword }
         );
 
@@ -85,12 +74,9 @@ export const loginUser = async (req, res) => {
             res.status(401).json({ error: 'Invalid username or password' });
             return;
         }
-        // -------------------------------------------------------
-        // console.log(userResult.records[0].get('user').properties)
 
         res.status(200).json({
             message: 'Login successful',
-            // token: generateToken(userResult.records[0].get('user').properties),
           });
     } catch (error) {
         console.error(error);
@@ -100,17 +86,3 @@ export const loginUser = async (req, res) => {
     }
 }
 
-export const isValidUsername = (username) => {
-    const usernameRegex = /^[a-zA-Z0-9_-]{1,20}$/;
-    return usernameRegex.test(username);
-};
-
-export const isValidEmail = (email) => {
-    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
-    return emailRegex.test(email);
-};
-
-export const isValidPassword = (password) => {
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    return passwordRegex.test(password);
-};

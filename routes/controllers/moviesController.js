@@ -3,6 +3,7 @@ import { config } from 'dotenv';
 import { checkNodeExistence,
      checkRelationshipExistence } from "../../helpers/checkExistence.js";
 import { addMovieToAction } from "../../helpers/movieHelpers.js";
+import { isValidateCommentReview, isValidRating } from "../../helpers/validation.js";
 // import { authorizeUser } from "../../middleware/authorization.js";
 // import { loginRequired } from "../../middleware/auth.js";
 
@@ -241,19 +242,26 @@ export const searchMoviesByDirectorOrActor = async (req, res) => {
 
 
 export const rateMovie = async (req, res) => {
-    const movieId = req.params.movieId;
-    const { userId, rating, review } = req.body;
+    const movieId = req.params.movieId ? req.params.movieId : req.body.movieId;
+    const { userId, rating, review, date } = req.body;
     const session = driver.session();
 
-    const userExists = await checkNodeExistence(session, 'User', 'userId', userId);
-    const movieExists = await checkNodeExistence(session, 'Movie', 'id', movieId);
-
-    if (!userExists || !movieExists) {
-        res.status(404).json({ error: 'User or Movie not found' });
-        return;
-    }
+    const newDate = date ? date : new Date().toISOString().split('T')[0]
 
     try {
+        if (!isValidRating(rating) || !isValidateCommentReview(review)) {
+            res.status(400).json({ error: 'Invalid rating or review. Please provide a comment a comment with a maximum length of 200 characters and rating between 1 and 10.' });
+            return;
+        }
+
+        const userExists = await checkNodeExistence(session, 'User', 'userId', userId);
+        const movieExists = await checkNodeExistence(session, 'Movie', 'id', movieId);
+    
+        if (!userExists || !movieExists) {
+            res.status(404).json({ error: 'User or movie not found' });
+            return;
+        }
+
         const isInWatchlistResult = await session.run(`
             MATCH (u:User {userId: $userId})-[:ADDED_TO_WATCHLIST]->(m:Movie {id: $movieId})
             RETURN COUNT(m) > 0 AS isInWatchlist
@@ -286,7 +294,7 @@ export const rateMovie = async (req, res) => {
             )
             YIELD value 
             RETURN value.review AS review, value.created AS created`,
-            { userId, movieId, rating, review, date: new Date().toISOString().split('T')[0] }
+            { userId, movieId, rating, review, date: newDate }
         );
 
     const created = result.records[0].get('created');
@@ -309,12 +317,17 @@ export const rateMovie = async (req, res) => {
 };
 
 export const commentMovie = async (req, res) => {
-    const movieId = req.params.movieId;
+    const movieId = req.params.movieId ? req.params.movieId : req.body.movieId;
     const { userId, comment } = req.body;
 
     const session = driver.session();
 
     try {
+        if (!isValidateCommentReview(comment)) {
+            res.status(400).json({ error: 'Invalid comment. Please provide a comment with a maximum length of 200 characters.' });
+            return;
+        }
+
         const userExists = await checkNodeExistence(session, 'User', 'userId', userId);
         const movieExists = await checkNodeExistence(session, 'Movie', 'id', movieId);
 
