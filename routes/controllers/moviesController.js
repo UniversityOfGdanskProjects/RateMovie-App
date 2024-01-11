@@ -4,9 +4,6 @@ import { checkNodeExistence,
      checkRelationshipExistence } from "../../helpers/checkExistence.js";
 import { addMovieToAction } from "../../helpers/movieHelpers.js";
 import { isValidateCommentReview, isValidRating } from "../../helpers/validation.js";
-// import { authorizeUser } from "../../middleware/authorization.js";
-// import { loginRequired } from "../../middleware/auth.js";
-
 
 config()
 const { TMDB_API_KEY, JWT_SECRET } = process.env
@@ -18,7 +15,8 @@ export const getMovies = async (req, res) => {
             MATCH (m:Movie)
             OPTIONAL MATCH (m)<-[:DIRECTED]-(director:Person)
             OPTIONAL MATCH (m)<-[:ACTED_IN]-(actor:Person)
-            RETURN m, COLLECT(DISTINCT director) AS directors, COLLECT(DISTINCT actor) AS actors
+            OPTIONAL MATCH (m)-[:IN_GENRE]->(genre: Genre)
+            RETURN m, COLLECT(DISTINCT director) AS directors, COLLECT(DISTINCT actor) AS actors, COLLECT (DISTINCT genre) as genres
             LIMIT 10
         `));
 
@@ -26,8 +24,9 @@ export const getMovies = async (req, res) => {
             const movie = record.get('m').properties;
             const directors = record.get('directors').map(director => director.properties);
             const actors = record.get('actors').map(actor => actor.properties);
+            const genres = record.get('genres').map(genre => genre.properties);
 
-            return { ...movie, directors, actors };
+            return { ...movie, directors, actors, genres };
         });
 
         res.json(data);
@@ -46,8 +45,9 @@ export const getPopularMovies = async (req, res) => {
             MATCH (u:User)-[r:REVIEWED]->(m:Movie)
             OPTIONAL MATCH (m)<-[:DIRECTED]-(director:Person)
             OPTIONAL MATCH (m)<-[:ACTED_IN]-(actor:Person)
-            WITH m, COUNT(r) AS numberOfReviews, COLLECT(DISTINCT director) AS directors, COLLECT(DISTINCT actor) AS actors
-            RETURN m, numberOfReviews, directors, actors
+            OPTIONAL MATCH (m)-[:IN_GENRE]->(genre: Genre)
+            WITH m, COUNT(r) AS numberOfReviews, COLLECT(DISTINCT director) AS directors, COLLECT(DISTINCT actor) AS actors, COLLECT (DISTINCT genre) as genres
+            RETURN m, numberOfReviews, directors, actors, genres
             ORDER BY numberOfReviews DESC
             LIMIT 10
         `));
@@ -57,8 +57,9 @@ export const getPopularMovies = async (req, res) => {
             const numberOfReviews = record.get('numberOfReviews').toNumber();
             const directors = record.get('directors').map(director => director.properties);
             const actors = record.get('actors').map(actor => actor.properties);
+            const genres = record.get('genres').map(genre => genre.properties);
 
-            return { ...movie, numberOfReviews, directors, actors };
+            return { ...movie, numberOfReviews, directors, actors, genres};
         });
 
         res.json(data);
@@ -78,7 +79,8 @@ export const getMovieById = async (req, res) => {
             MATCH (n:Movie {id: $id})
             OPTIONAL MATCH (n)<-[:DIRECTED]-(director:Person)
             OPTIONAL MATCH (n)<-[:ACTED_IN]-(actor:Person)
-            RETURN n, COLLECT(DISTINCT director) AS directors, COLLECT(DISTINCT actor) AS actors
+            OPTIONAL MATCH (m)-[:IN_GENRE]->(genre: Genre)
+            RETURN n, COLLECT(DISTINCT director) AS directors, COLLECT(DISTINCT actor) AS actors, COLLECT (DISTINCT genre) as genres
         `, { id: id }));
 
         if (result.records.length === 0) {
@@ -86,9 +88,9 @@ export const getMovieById = async (req, res) => {
         } else {
             const movie = result.records[0].get('n').properties;
             const directors = result.records[0].get('directors').map(director => director.properties);
-            const actors = result.records[0].get('actors').map(actor => actor.properties);
+            const genres = record.get('genres').map(genre => genre.properties);
 
-            const data = { ...movie, directors, actors };
+            return { ...movie, numberOfReviews, directors, actors, genres};
             res.json(data);
         }
     } catch (error) {
@@ -152,7 +154,7 @@ const buildQuery = ({ title, genre, rating, year, sortBy, sortOrder, name, userI
         )
         : '';
 
-    const queryReturn = ' RETURN m, COLLECT(DISTINCT director) AS directors, COLLECT(DISTINCT actor) AS actors';
+    const queryReturn = ' RETURN m, COLLECT(DISTINCT director) AS directors, COLLECT(DISTINCT actor) AS actors, COLLECT(DISTINCT g) AS genres';
 
     return `${queryMatch}${queryWith}${queryWhere}${queryReturn}${orderQuery}`;
 };
@@ -185,8 +187,9 @@ export const searchMovies = async (req, res) => {
             const movie = record.get('m').properties;
             const directors = record.get('directors').map(director => director.properties);
             const actors = record.get('actors').map(actor => actor.properties);
+            const genres = record.get('genres').map(genre => genre.properties)
 
-            return { ...movie, directors, actors };
+            return { ...movie, directors, actors, genres };
         });
 
         res.json(data);
@@ -226,8 +229,9 @@ export const searchMoviesByDirectorOrActor = async (req, res) => {
             const movie = record.get('m').properties;
             const directors = record.get('directors').map(director => director.properties);
             const actors = record.get('actors').map(actor => actor.properties);
+            const genres = record.get('genres').map(genre => genre.properties)
 
-            return { ...movie, directors, actors };
+            return { ...movie, directors, actors, genres };
         });
 
         res.json(data);
@@ -376,60 +380,3 @@ export const addMovieToWatchlist = async (req, res) => {
 export const addMovieToFollowed = async (req, res) => {
     await addMovieToAction(req, res, 'FOLLOWED');
 };
-
-
-// export const addMovieFromTmdbById = async (req, res) => {
-//     console.log(TMDB_API_KEY)
-//     const {id} = req.body;
-//     console.log(id)
-//     const session = driver.session();
-//     try {
-//         const result = await session.run(`
-//             WITH $id as movieId, "${TMDB_API_KEY}" as tmdbApiKey
-//             CALL apoc.load.json('https://api.themoviedb.org/3/movie/' + movieId + '?api_key=' 
-//                 + tmdbApiKey + '&append_to_response=credits,videos,images') YIELD value
-            
-//             MERGE (m:Movie {id: value.id})
-//             ON CREATE SET 
-//                 m.overview = value.overview,
-//                 m.original_language = value.original_language,
-//                 m.original_title = value.original_title,
-//                 m.runtime = value.runtime,
-//                 m.title = value.title,
-//                 m.poster_path = value.poster_path,
-//                 m.backdrop_path = value.backdrop_path,
-//                 m.release_date = value.release_date,
-//                 m.tagline = value.tagline,
-//                 m.budget = value.budget,
-//                 m.images = [backdrop IN value.images.backdrops | backdrop.file_path],
-//                 m.trailers = [video IN value.videos.results WHERE video.site = 'YouTube' AND video.type = 'Trailer' | video.key]
-            
-//             FOREACH (director IN value.credits.crew | 
-//                 FOREACH (_ IN CASE WHEN director.job = "Director" THEN [1] ELSE [] END |
-//                     MERGE (p:Person:Director {id: director.id})
-//                     ON CREATE SET p.name = director.name, p.profile_path = director.profile_path
-//                     MERGE (m)<-[:DIRECTED]-(p)
-//                 )
-//             )
-            
-//             WITH value.credits.cast AS cast, m
-//             UNWIND cast AS actorData
-//             WITH actorData, m
-//             LIMIT 15
-//             MERGE (a:Person:Actor {id: actorData.id})
-//             ON CREATE SET a.name = actorData.name, a.profile_path = actorData.profile_path
-//             MERGE (m)<-[r:ACTED_IN]-(a)
-//             ON CREATE SET r.character = actorData.character
-
-//             RETURN m
-//         `, { id });
-
-//         const data = result.records.map(record => record.toObject());
-//         res.json(data);
-//     } catch (error) {
-//         console.error('Error retrieving popular movies:', error);
-//         res.status(500).json({ error: 'Internal Server Error' });
-//     } finally {
-//         await session.close();
-//     }
-// };
