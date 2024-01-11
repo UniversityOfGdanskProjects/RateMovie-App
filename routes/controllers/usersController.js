@@ -86,3 +86,31 @@ export const loginUser = async (req, res) => {
     }
 }
 
+export const usersRanking = async (req, res) => {
+    const session = driver.session();
+    try {
+        const result = await session.executeRead(tx => tx.run(`
+            MATCH (u:User)-[r:REVIEWED|:COMMENTED]-(m:Movie)
+            RETURN u, COUNT(r) as activity
+            ORDER BY activity DESC
+            LIMIT 20
+        `));
+
+        const data = result.records.map(record => {
+            const user = record.get('u').properties;
+            const activity = record.get('activity').toNumber();
+            
+            return {
+                user,
+                activity
+            };
+        });
+
+        res.status(200).json(data);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Internal Server Error');
+    } finally {
+        await session.close();
+    }
+};

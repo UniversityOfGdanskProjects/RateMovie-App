@@ -154,7 +154,7 @@ const buildQuery = ({ title, genre, rating, year, sortBy, sortOrder, name, userI
         )
         : '';
 
-    const queryReturn = ' RETURN m, COLLECT(DISTINCT director) AS directors, COLLECT(DISTINCT actor) AS actors, COLLECT(DISTINCT g) AS genres';
+    const queryReturn = ' RETURN m, COLLECT(DISTINCT director) AS directors, COLLECT(DISTINCT actor) AS actors, COLLECT(DISTINCT g) AS genres, avgRating, popularity';
 
     return `${queryMatch}${queryWith}${queryWhere}${queryReturn}${orderQuery}`;
 };
@@ -187,9 +187,11 @@ export const searchMovies = async (req, res) => {
             const movie = record.get('m').properties;
             const directors = record.get('directors').map(director => director.properties);
             const actors = record.get('actors').map(actor => actor.properties);
-            const genres = record.get('genres').map(genre => genre.properties)
+            const genres = record.get('genres').map(genre => genre.properties);
+            const avgRating = record.get('avgRating')
+            const popularity = record.get('popularity')
 
-            return { ...movie, directors, actors, genres };
+            return { ...movie, directors, actors, genres, avgRating, popularity };
         });
 
         res.json(data);
@@ -229,9 +231,11 @@ export const searchMoviesByDirectorOrActor = async (req, res) => {
             const movie = record.get('m').properties;
             const directors = record.get('directors').map(director => director.properties);
             const actors = record.get('actors').map(actor => actor.properties);
-            const genres = record.get('genres').map(genre => genre.properties)
+            const genres = record.get('genres').map(genre => genre.properties);
+            const avgRating = record.get('avgRating')
+            const popularity = record.get('popularity')
 
-            return { ...movie, directors, actors, genres };
+            return { ...movie, directors, actors, genres, avgRating, popularity };
         });
 
         res.json(data);
