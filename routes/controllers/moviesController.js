@@ -12,21 +12,20 @@ export const getMovies = async (req, res) => {
     const session = driver.session();
     try {
         const result = await session.executeRead(tx => tx.run(`
-            MATCH (m:Movie)
-            OPTIONAL MATCH (m)<-[:DIRECTED]-(director:Person)
-            OPTIONAL MATCH (m)<-[:ACTED_IN]-(actor:Person)
-            OPTIONAL MATCH (m)-[:IN_GENRE]->(genre: Genre)
-            RETURN m, COLLECT(DISTINCT director) AS directors, COLLECT(DISTINCT actor) AS actors, COLLECT (DISTINCT genre) as genres
-            LIMIT 10
-        `));
+        MATCH (m:Movie)
+        OPTIONAL MATCH (m)-[:IN_GENRE]->(genre: Genre)
+        OPTIONAL MATCH (m)<-[r:REVIEWED]-(u: User)
+        RETURN m, COLLECT (DISTINCT genre) as genres, 
+        COUNT(DISTINCT r) AS rating_count, AVG(r.rating) AS rating_avg
+    `));
 
         const data = result.records.map(record => {
             const movie = record.get('m').properties;
-            const directors = record.get('directors').map(director => director.properties);
-            const actors = record.get('actors').map(actor => actor.properties);
             const genres = record.get('genres').map(genre => genre.properties);
+            const rating_count = record.get('rating_count')
+            const rating_avg = record.get('rating_avg')
 
-            return { ...movie, directors, actors, genres };
+            return { ...movie, genres, rating_avg, rating_count};
         });
 
         res.json(data);
@@ -43,23 +42,20 @@ export const getPopularMovies = async (req, res) => {
     try {
         const result = await session.executeRead(tx => tx.run(`
             MATCH (u:User)-[r:REVIEWED]->(m:Movie)
-            OPTIONAL MATCH (m)<-[:DIRECTED]-(director:Person)
-            OPTIONAL MATCH (m)<-[:ACTED_IN]-(actor:Person)
             OPTIONAL MATCH (m)-[:IN_GENRE]->(genre: Genre)
-            WITH m, COUNT(r) AS numberOfReviews, COLLECT(DISTINCT director) AS directors, COLLECT(DISTINCT actor) AS actors, COLLECT (DISTINCT genre) as genres
-            RETURN m, numberOfReviews, directors, actors, genres
-            ORDER BY numberOfReviews DESC
+            WITH m, COUNT(DISTINCT r) AS rating_count, COLLECT (DISTINCT genre) as genres, AVG(r.rating) AS rating_avg
+            RETURN m, rating_count, genres, rating_avg
+            ORDER BY rating_count DESC
             LIMIT 10
         `));
 
         const data = result.records.map(record => {
             const movie = record.get('m').properties;
-            const numberOfReviews = record.get('numberOfReviews').toNumber();
-            const directors = record.get('directors').map(director => director.properties);
-            const actors = record.get('actors').map(actor => actor.properties);
+            const rating_count = record.get('rating_count');
+            const rating_avg = record.get('rating_avg')
             const genres = record.get('genres').map(genre => genre.properties);
 
-            return { ...movie, numberOfReviews, directors, actors, genres};
+            return { ...movie, genres, rating_avg, rating_count};
         });
 
         res.json(data);
@@ -80,7 +76,9 @@ export const getMovieById = async (req, res) => {
             OPTIONAL MATCH (n)<-[:DIRECTED]-(director:Person)
             OPTIONAL MATCH (n)<-[:ACTED_IN]-(actor:Person)
             OPTIONAL MATCH (m)-[:IN_GENRE]->(genre: Genre)
-            RETURN n, COLLECT(DISTINCT director) AS directors, COLLECT(DISTINCT actor) AS actors, COLLECT (DISTINCT genre) as genres
+            OPTIONAL MATCH (m)<-[r:REVIEWED]-(u: User)
+            RETURN n, COLLECT(DISTINCT director) AS directors, COLLECT(DISTINCT actor) AS actors, 
+            COLLECT (DISTINCT genre) as genres, COUNT(DISTINCT r) AS rating_count, AVG(r.rating) AS rating_avg
         `, { id: id }));
 
         if (result.records.length === 0) {
@@ -88,9 +86,12 @@ export const getMovieById = async (req, res) => {
         } else {
             const movie = result.records[0].get('n').properties;
             const directors = result.records[0].get('directors').map(director => director.properties);
-            const genres = record.get('genres').map(genre => genre.properties);
+            const genres = result.records[0].get('genres').map(genre => genre.properties);
+            const actors = result.records[0].get('actors').map(actor => actor.properties);
+            const rating_count = result.records[0].get('rating_count')
+            const rating_avg = result.records[0].get('rating_avg')
 
-            return { ...movie, numberOfReviews, directors, actors, genres};
+            const data = { ...movie, directors, actors, genres, rating_avg, rating_count};
             res.json(data);
         }
     } catch (error) {
@@ -113,33 +114,33 @@ const buildQuery = ({ title, genre, rating, year, sortBy, sortOrder, name, userI
 
     const queryMatch = name ? 
         `MATCH (g:Genre)<-[:IN_GENRE]-(m:Movie)<-[:DIRECTED| :ACTED_IN]-(p: Person) 
-        OPTIONAL MATCH (m)<-[:DIRECTED]-(director:Person)
-        OPTIONAL MATCH (m)<-[:ACTED_IN]-(actor:Person)
+        OPTIONAL MATCH (m)<-[:DIRECTED]-(director:Director)
+        OPTIONAL MATCH (m)<-[:ACTED_IN]-(actor:Actor)
         OPTIONAL MATCH (u:User)-[r:REVIEWED]->(m) 
         OPTIONAL MATCH (u2: User {userId: "${userId}"})-[ignores:IGNORES]->(m)`
         :
         `MATCH (g:Genre)<-[:IN_GENRE]-(m:Movie)
-        OPTIONAL MATCH (m)<-[:DIRECTED]-(director:Person)
-        OPTIONAL MATCH (m)<-[:ACTED_IN]-(actor:Person)
+        OPTIONAL MATCH (m)<-[:DIRECTED]-(director:Director)
+        OPTIONAL MATCH (m)<-[:ACTED_IN]-(actor:Actor)
         OPTIONAL MATCH (u:User)-[r:REVIEWED]->(m) 
         OPTIONAL MATCH (u2: User {userId: "${userId}"})-[ignores:IGNORES]->(m)`;
 
     const queryWith = name ? 
         ` WITH m, g, ignores, p, 
-        AVG(r.rating) AS avgRating, 
-        COUNT(r) AS popularity,
+        AVG(r.rating) AS rating_avg, 
+        COUNT(DISTINCT r) AS rating_count,
         director, 
         actor`
         :
         ` WITH m, g, ignores,
-        AVG(r.rating) AS avgRating, 
-        COUNT(r) AS popularity,
+        AVG(r.rating) AS rating_avg, 
+        COUNT(DISTINCT r) AS rating_count,
         director, 
         actor`
         ;
     const conditions = {
         title: title && `m.title =~ '(?i).*${title}.*' OR m.original_title =~ '(?i).*${title}.*'`,
-        rating: rating && `avgRating >= $rating AND avgRating <= $rating + 1`,
+        rating: rating && `rating_avg >= $rating AND rating_avg <= $rating + 1`,
         genre: genre && `g.name = $genre`,
         year: year && `m.release_date STARTS WITH $year`,
         name: name && `p.name =~ '(?i).*${name}.*'`,
@@ -148,13 +149,16 @@ const buildQuery = ({ title, genre, rating, year, sortBy, sortOrder, name, userI
     const queryWhere = buildQueryWhere(conditions);
 
     const orderQuery = (sortBy && sortOrder)
-        ? (['avgRating', 'popularity'].includes(sortBy)
+        ? (['rating_avg', 'rating_count'].includes(sortBy)
             ? ` ORDER BY ${sortBy} ${sortOrder}`
             : ` ORDER BY m.${sortBy} ${sortOrder}`
         )
         : '';
 
-    const queryReturn = ' RETURN m, COLLECT(DISTINCT director) AS directors, COLLECT(DISTINCT actor) AS actors, COLLECT(DISTINCT g) AS genres, avgRating, popularity';
+    const queryReturn = ` 
+    RETURN m, COLLECT(DISTINCT director) AS directors, COLLECT(DISTINCT actor) AS actors, 
+    COLLECT(DISTINCT g) AS genres, rating_avg, rating_count
+    `;
 
     return `${queryMatch}${queryWith}${queryWhere}${queryReturn}${orderQuery}`;
 };
@@ -188,10 +192,10 @@ export const searchMovies = async (req, res) => {
             const directors = record.get('directors').map(director => director.properties);
             const actors = record.get('actors').map(actor => actor.properties);
             const genres = record.get('genres').map(genre => genre.properties);
-            const avgRating = record.get('avgRating')
-            const popularity = record.get('popularity')
+            const rating_avg = record.get('rating_avg')
+            const rating_count = record.get('rating_count')
 
-            return { ...movie, directors, actors, genres, avgRating, popularity };
+            return { ...movie, directors, actors, genres, rating_avg, rating_count };
         });
 
         res.json(data);
@@ -232,10 +236,10 @@ export const searchMoviesByDirectorOrActor = async (req, res) => {
             const directors = record.get('directors').map(director => director.properties);
             const actors = record.get('actors').map(actor => actor.properties);
             const genres = record.get('genres').map(genre => genre.properties);
-            const avgRating = record.get('avgRating')
-            const popularity = record.get('popularity')
+            const rating_avg = record.get('rating_avg')
+            const rating_count = record.get('rating_count')
 
-            return { ...movie, directors, actors, genres, avgRating, popularity };
+            return { ...movie, directors, actors, genres, rating_count, rating_avg };
         });
 
         res.json(data);
