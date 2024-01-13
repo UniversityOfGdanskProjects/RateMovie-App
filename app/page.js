@@ -1,13 +1,14 @@
 'use client'
 
 import Image from 'next/image'
+import Link from 'next/link'
 import MovieList from '@/components/MovieList'
 import { useState, useEffect } from 'react'
 import { config } from 'dotenv'
 config()
 
 // const BASE_URL = process.env.BASE_URL
-const BASE_URL = 'http://localhost:3000/api'
+const BASE_URL = 'http://localhost:7000/api'
 
 const PopularMovies = () => {
   const [ movies, setMovies ] = useState([])
@@ -40,13 +41,18 @@ const PopularMovies = () => {
 
 export default function App() {
   return (
-    <main className="flex flex-col items-center gap-24 justify-between p-24">
-      <section className='w-full flex-center flex-col'>
+    <main className="flex flex-col items-center gap-24 justify-between">
+      <section className=''>
         <p className=''>
         Track films you’ve watched. Save those you want to see.
         </p>
+        <Link href='/register' className='my-2'>
+        <button className='big-btn'>
+          GET STARTED - IT'S FREE
+        </button>
+        </Link>
+        <PopularMovies />
       </section>
-      <PopularMovies />
     </main>
   )
 }

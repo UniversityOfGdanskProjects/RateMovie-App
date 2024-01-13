@@ -1,6 +1,7 @@
 import { Inter } from 'next/font/google'
 import '../styles/globals.scss'
 import Nav from '@/components/Nav'
+import { UserContextProvider } from '@/context/userContextProvider'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -12,9 +13,11 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
-        <Nav/>
-        {children}
+      <body className={`${inter.className} bg-slate-700 text-slate-200`}>
+        <UserContextProvider>
+          <Nav/>
+          {children}
+        </UserContextProvider>
       </body>
     </html>
   )
