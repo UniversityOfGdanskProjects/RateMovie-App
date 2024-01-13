@@ -17,10 +17,11 @@ export const getMovies = async (req, res) => {
         OPTIONAL MATCH (m)<-[r:REVIEWED]-(u: User)
         RETURN m, COLLECT (DISTINCT genre) as genres, 
         COUNT(DISTINCT r) AS rating_count, AVG(r.rating) AS rating_avg
+        LIMIT 10
     `));
 
         const data = result.records.map(record => {
-            const movie = record.get('m').properties;
+            const movie = record.get('m').properties
             const genres = record.get('genres').map(genre => genre.properties);
             const rating_count = record.get('rating_count')
             const rating_avg = record.get('rating_avg')
@@ -46,7 +47,7 @@ export const getPopularMovies = async (req, res) => {
             WITH m, COUNT(DISTINCT r) AS rating_count, COLLECT (DISTINCT genre) as genres, AVG(r.rating) AS rating_avg
             RETURN m, rating_count, genres, rating_avg
             ORDER BY rating_count DESC
-            LIMIT 10
+            LIMIT 20
         `));
 
         const data = result.records.map(record => {
@@ -72,19 +73,19 @@ export const getMovieById = async (req, res) => {
     const session = driver.session();
     try {
         const result = await session.executeRead(tx => tx.run(`
-            MATCH (n:Movie {id: $id})
-            OPTIONAL MATCH (n)<-[:DIRECTED]-(director:Person)
-            OPTIONAL MATCH (n)<-[:ACTED_IN]-(actor:Person)
+            MATCH (m:Movie {id: $id})
+            OPTIONAL MATCH (m)<-[:DIRECTED]-(director:Person)
+            OPTIONAL MATCH (m)<-[:ACTED_IN]-(actor:Person)
             OPTIONAL MATCH (m)-[:IN_GENRE]->(genre: Genre)
             OPTIONAL MATCH (m)<-[r:REVIEWED]-(u: User)
-            RETURN n, COLLECT(DISTINCT director) AS directors, COLLECT(DISTINCT actor) AS actors, 
+            RETURN m, COLLECT(DISTINCT director) AS directors, COLLECT(DISTINCT actor) AS actors, 
             COLLECT (DISTINCT genre) as genres, COUNT(DISTINCT r) AS rating_count, AVG(r.rating) AS rating_avg
         `, { id: id }));
 
         if (result.records.length === 0) {
             res.status(404).json({ error: 'Movie not found' });
         } else {
-            const movie = result.records[0].get('n').properties;
+            const movie = result.records[0].get('m').properties;
             const directors = result.records[0].get('directors').map(director => director.properties);
             const genres = result.records[0].get('genres').map(genre => genre.properties);
             const actors = result.records[0].get('actors').map(actor => actor.properties);

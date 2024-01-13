@@ -112,3 +112,39 @@ export const removeMovieFromAction = async (req, res, actionType) => {
         await session.close();
     }
 };
+
+export const getRelationByMovieAndUser = async (req, res, relationType) => {
+    const { userId, movieId } = req.query;
+    console.log(userId, movieId)
+    const session = driver.session();
+  
+    try {
+      const userExists = await checkNodeExistence(session, 'User', 'userId', userId);
+      const movieExists = await checkNodeExistence(session, 'Movie', 'id', movieId);
+  
+      if (!userExists || !movieExists) {
+        res.status(404).json({ error: 'User or Movie not found' });
+        return;
+      }
+  
+      const query = `
+        MATCH (u: User {userId: $userId})-[r:${relationType}]->(m: Movie {id: $movieId})
+        RETURN r
+      `;
+      console.log(query)
+  
+      const result = await session.run(query, { userId, movieId });
+  
+      if (result.records.length > 0) {
+        const createdRelationship = result.records[0].get('r').properties;
+        res.status(200).json(createdRelationship);
+      } else {
+        res.status(404).json({ error: 'Relationship not found' });
+      }
+    } catch (error) {
+      console.error('Error fetching relationship:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    } finally {
+      await session.close();
+    }
+  };

@@ -660,12 +660,12 @@ export const addMovieFromTMDB = async (req, res) => {
                 original_title: tmdbResponse.original_title,
                 runtime: tmdbResponse.runtime,
                 title: tmdbResponse.title,
-                poster_path: tmdbResponse.poster_path,
-                backdrop_path: tmdbResponse.backdrop_path,
+                poster_path: "https://image.tmdb.org/t/p/original" + tmdbResponse.poster_path,
+                backdrop_path: "https://image.tmdb.org/t/p/original" + tmdbResponse.backdrop_path,
                 release_date: tmdbResponse.release_date,
                 tagline: tmdbResponse.tagline,
                 budget: tmdbResponse.budget,
-                images: tmdbResponse.images.backdrops.map(backdrop => backdrop.file_path),
+                images: tmdbResponse.images.backdrops.map(backdrop => "https://image.tmdb.org/t/p/original" + backdrop.file_path),
                 trailers: tmdbResponse.videos.results
                     .filter(video => video.site === 'YouTube' && video.type === 'Trailer')
                     .map(video => video.key)
@@ -700,7 +700,7 @@ export const addMovieFromTMDB = async (req, res) => {
                 const addDirectorParams = {
                     id: director.id.toString(),
                     name: director.name,
-                    profile_path: director.profile_path,
+                    profile_path: "https://image.tmdb.org/t/p/original" + director.profile_path,
                     movieId: tmdbResponse.id.toString()
                 };
 
@@ -718,7 +718,7 @@ export const addMovieFromTMDB = async (req, res) => {
             const addActorParams = {
                 id: actorData.id.toString(),
                 name: actorData.name,
-                profile_path: actorData.profile_path,
+                profile_path: "https://image.tmdb.org/t/p/original" + actorData.profile_path,
                 movieId: tmdbResponse.id.toString(),
                 character: actorData.character
             };

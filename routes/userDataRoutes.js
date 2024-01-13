@@ -4,7 +4,9 @@ import { getFavouriteMovies,
     getIgnoredMovies, 
     getFollowedMovies,
     getCommentedMovies,
-    getReviewedMovies } from './controllers/userDataController.js';
+    getReviewedMovies,
+    getReviewByMovieAndUser
+ } from './controllers/userDataController.js';
 
 const userDataRoutes = express.Router();
 
@@ -14,5 +16,6 @@ userDataRoutes.get('/api/ignored', getIgnoredMovies);
 userDataRoutes.get('/api/followed', getFollowedMovies);
 userDataRoutes.get('/api/commented', getCommentedMovies);
 userDataRoutes.get('/api/reviewed', getReviewedMovies);
+userDataRoutes.get('/api/review', getReviewByMovieAndUser);
 
 export default userDataRoutes;

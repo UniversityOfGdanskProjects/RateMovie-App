@@ -1,4 +1,5 @@
-import { getMoviesByRelation } from '../../helpers/movieHelpers.js';
+import { getMoviesByRelation, getRelationByMovieAndUser } from '../../helpers/movieHelpers.js';
+import driver from "../../db/neo4jDriver.js";
 
 export const getFavouriteMovies = async (req, res) => {
     await getMoviesByRelation(req, res, 'FAVOURITES');
@@ -23,3 +24,7 @@ export const getCommentedMovies = async (req, res) => {
 export const getReviewedMovies = async (req, res) => {
     await getMoviesByRelation(req, res, 'REVIEWED');
 };
+
+export const getReviewByMovieAndUser = async (req, res) => {
+    await getRelationByMovieAndUser(req, res, 'REVIEWED');
+}
