@@ -2,10 +2,10 @@ import React from 'react'
 import MovieCard from './MovieCard'
 
 
-export default function MovieList({movies}) {
+export default function MovieList({movies, isPersonal}) {
   return (
-    <div>
-      {movies.map(movie => <MovieCard movie={movie} key={movie.id}/>)}
+    <div className='movie-list'>
+      {movies.map(movie => <MovieCard isPersonal={isPersonal} movie={movie} key={movie.id}/>)}
     </div>
     // <div>MovieList</div>
   )

@@ -4,6 +4,6 @@ import React from 'react'
 
 export default function ProfilePage() {
   return (
-    <div>Profile Page</div>
+    <section className='bg-pink-800'>profile page</section>
   )
 }

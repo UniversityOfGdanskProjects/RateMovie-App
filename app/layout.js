@@ -1,9 +1,9 @@
-import { Inter } from 'next/font/google'
+import { Red_Hat_Display } from 'next/font/google'
 import '../styles/globals.scss'
 import Nav from '@/components/Nav'
 import { UserContextProvider } from '@/context/userContextProvider'
 
-const inter = Inter({ subsets: ['latin'] })
+const red_hat = Red_Hat_Display({ subsets: ['latin'] })
 
 export const metadata = {
   title: 'MovieRate',
@@ -13,7 +13,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} bg-slate-700 text-slate-200`}>
+      <body className={`${red_hat.className} bg-slate-800 text-slate-200`}>
         <UserContextProvider>
           <Nav/>
           {children}

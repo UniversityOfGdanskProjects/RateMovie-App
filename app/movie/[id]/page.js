@@ -2,6 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import RateCard from '@/components/RateCard';
 import { TbStar } from "react-icons/tb";
+import MovieDetails from '@/components/MovieDetails';
+import MovieGallery from '@/components/MovieGallery';
+import MovieTrailer from '@/components/MovieTrailer';
 
 export default function MovieDetailsPage({ params }) {
   const { id } = params;
@@ -73,10 +76,15 @@ export default function MovieDetailsPage({ params }) {
                 ))}</p>
                 <h2 className='text-slate-400 font-bold'>{movie.tagline}</h2>
                 <p className=''>{movie.overview}</p>
-                <p>{movie.release_date} | ({movie.original_language})</p> 
             </div>
             <RateCard movieId={ id }/>
           </div>
+          <MovieDetails movie={movie}/>
+          <div className='movie-gallery-trailer'>
+            <MovieTrailer movie={movie}/>
+            <MovieGallery movie={movie}/>
+          </div>
+
         </section>
       ) : <section>{errorMsg}</section>}
     </>
