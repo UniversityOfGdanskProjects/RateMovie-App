@@ -40,7 +40,7 @@
     // .error-text {
     //   background-color: green;
     //   width: 70%;
-    //   word-wrap: break-word; /* Ustawienie zawijania tekstu */
+    //   word-wrap: break-word;
     // }
 
     .movie-container {
@@ -48,6 +48,7 @@
       display: flex;
       gap: 1rem;
       .poster-container {
+        min-width: 12rem;
         flex: 1;
       }
       .info-container {
