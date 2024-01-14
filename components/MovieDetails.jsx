@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 
 export default function MovieDetails({ movie }) {
   return (
@@ -41,7 +42,13 @@ export default function MovieDetails({ movie }) {
             movie.actors.map((actor, index) => {
               return (
                 <div key={index} className='person-card'>
-                  <img src={`${actor.profile_path}`} />
+                  { 
+                  actor.profile_path ? (
+                    <img src={`${actor.profile_path}`} /> 
+                  ) : (
+                    <img src='/assets/images/actor.png'/>
+                  )
+                  }
                   <p>{actor.name}</p>
                   <div className='role-overlay'>
                     <p>{actor.character}</p>

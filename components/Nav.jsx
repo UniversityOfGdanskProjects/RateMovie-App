@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { TbSearch } from "react-icons/tb";
 import { useContext, useEffect, useState } from "react";
 import { UserContext } from "@/context/userContextProvider";
 
@@ -28,7 +29,11 @@ export default function Nav() {
           </button>
         </Link>
         }
-
+        <Link href='/search'>
+          <button className='big-btn py-1 px-3 flex flex-center items-center gap-2' onClick={()=>setUser(null)}>
+            <p>Search</p><TbSearch />
+          </button>
+        </Link>
         { user && 
         <Link href='/profile' className='flex gap-2 flex-center items-center'>
           <Image

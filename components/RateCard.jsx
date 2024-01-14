@@ -67,6 +67,7 @@ export default function RateCard({ movieId }) {
 
     const addReview = async (values) => {
         try {
+            setMsg('...adding review')
 
             const response = await fetch(`http://localhost:7000/api/movies/${movieId}/rate`, {
                 method: "POST",
@@ -76,6 +77,7 @@ export default function RateCard({ movieId }) {
                 body: JSON.stringify({ userId: user.id, rating: values.rating, review: values.review})
             })
             if (response.status === 404 || response.status === 400) {
+                setMsg('problems')
                 // console.error('błąąąąąąąąąąąąąąąąąąąąąąd')
                 return;
             }
@@ -83,7 +85,6 @@ export default function RateCard({ movieId }) {
             console.log('successful adding review')
             setMsg('added review')
             
-            const data = await response.json();
         } catch (error) {
             // console.error('Error fetching movie:', error);
         }
@@ -116,7 +117,7 @@ export default function RateCard({ movieId }) {
             const isInFav = await fetch(`http://localhost:7000/api/favourite/${user.id}/${movieId}`)
             const isInIgnored = await fetch(`http://localhost:7000/api/ignored/${user.id}/${movieId}`)
             const isInFollowed = await fetch(`http://localhost:7000/api/followed/${user.id}/${movieId}`)
-            const isInWatchtlist = await fetch(`http://localhost:7000/api/watchilist/${user.id}/${movieId}`)
+            const isInWatchtlist = await fetch(`http://localhost:7000/api/watchlist/${user.id}/${movieId}`)
             if (isInFav.ok) setInFavourties(true)
             if (isInIgnored.ok) setInIgnored(true)
             if (isInFollowed.ok) setInFollowed(true)
@@ -129,9 +130,10 @@ export default function RateCard({ movieId }) {
                 review: reviewData ? reviewData.review : '',
                 rating: reviewData ? reviewData.rating : 0,
             });
-            } else {
-              console.log('Failed to fetch review:', isInReviewed.status, isInReviewed.statusText);
-            }
+              } 
+              // else {
+              //   console.log('Failed to fetch review:', isInReviewed.status, isInReviewed.statusText);
+              // }
           }
         } catch (error) {
           // console.error('Error fetching review:', error);
@@ -180,13 +182,14 @@ export default function RateCard({ movieId }) {
                 <p className='char-counter'>{formik.values.review.length}/200</p>
                 {formik.touched.review && <p className='char-counter'>{formik.errors.review}</p>}
                 {msg && <p className='char-counter'>{msg}</p>}
-                <button className="big-btn" onClick={formik.handleSubmit}>SAVE</button>
+                <button type="submit" className="big-btn" onClick={formik.handleSubmit}>SAVE</button>
                 
               </>
             ) : (
-              <p>
-                  <Link href='/login'><button className="big-btn">Sign In</button></Link> to add a review!
-              </p>
+              <>
+              <Link href='/login'><button className="big-btn">Sign In</button></Link>
+              <p className=''> to add a review!</p>
+              </>
             )}
           </>
         )}

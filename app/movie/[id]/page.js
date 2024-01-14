@@ -52,11 +52,11 @@ export default function MovieDetailsPage({ params }) {
                         {index < movie.directors.length - 1 && ', '}
                     </span>
                 ))}</p>
-                <div className='backdrop-rating'>
+            </div>
+            <div className='backdrop-rating'>
                     <TbStar className='star'/>
                     { movie.rating_avg && <p className='rating-avg'>{movie.rating_avg.toFixed(2)}</p>}
                     { movie.rating_count && <p className='rating-count text-slate-400'>{movie.rating_count.low} ratings</p>}
-                </div>
             </div>
             <div className="backdrop-gradient"></div>
             <img src={movie.backdrop_path} alt="Backdrop" className="backdrop" />

@@ -16,10 +16,10 @@
       @apply font-bold text-slate-200;
     }
     .small-btn {
-      @apply bg-slate-500 hover:bg-slate-600 text-slate-200 py-1 px-2 rounded-lg;
+      @apply bg-slate-500 hover:bg-slate-600 text-slate-200 py-1 px-3 rounded-lg;
     }
     .big-btn {
-      @apply bg-pink-800 hover:bg-pink-900 py-2 px-4 rounded-lg shadow-xl;
+      @apply bg-pink-800 hover:bg-pink-900 py-2 px-4 rounded-lg shadow-xl flex items-center gap-2;
     }
     .review-btn {
       @apply bg-slate-500 hover:bg-slate-600 border-2 border-slate-400 rounded-lg flex items-center gap-2 text-xl cursor-pointer py-2 px-6;
@@ -35,11 +35,22 @@
       @apply text-slate-900 p-2 bg-slate-300;
     }
 
+
     input {
       @apply text-slate-900 p-2;
     }
     .char-counter {
       @apply text-slate-400 text-sm;
+    }
+
+    .users-list-page {
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      h1 {
+        
+      }
     }
 
     .movie-container {
@@ -72,6 +83,7 @@
     
 
     .backdrop-rating {
+      // background-color: pink;
       z-index: 5;
       position: absolute;
       right: 3rem;
@@ -97,6 +109,10 @@
       left: 0;
       padding: 3rem;
       width: 100%;
+      .title {
+        @apply text-5xl font-bold;
+        margin-right: 4.5rem;
+      }
     }
     
     .backdrop-container {

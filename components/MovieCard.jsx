@@ -10,7 +10,7 @@ export default function MovieCard({ movie, isPersonal }) {
     <div className='movie-card'>
       <Link href={`/movie/${movie.id}`}>
         <div className='image-container'>
-          <img src={url} alt={movie.title} layout='fill' objectFit='cover' />
+          <img src={url} alt={movie.title} layout='fill' objectfit='cover' />
           <div className='overlay'>
             <p className='title'>{movie.title}</p>
             { !isPersonal && <p className='rating'><TbStar className='star'/>{movie.rating_avg.toFixed(2)}</p>}
