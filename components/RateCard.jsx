@@ -14,6 +14,30 @@ export default function RateCard({ movieId }) {
     const { user, setUser } = useContext(UserContext);
     const [showReviewSection, setShowReviewSection] = useState(false);
     const [existingReview, setExistingReview] = useState(null);
+    const [msg, setMsg] = useState('')
+
+    const addReview = async (values) => {
+        try {
+            const response = await fetch(`http://localhost:7000/api/movies/${movieId}/rate`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ userId: user.id, rating: values.rating, review: values.review})
+            })
+            if (response.status === 404 || response.status === 400) {
+                console.error('błąąąąąąąąąąąąąąąąąąąąąąd')
+                return;
+            }
+
+            console.log('successful adding review')
+            setMsg('added review')
+            
+            const data = await response.json();
+        } catch (error) {
+            console.error('Error fetching movie:', error);
+        }
+    }
 
     const formik = useFormik({
         initialValues: {
@@ -22,12 +46,17 @@ export default function RateCard({ movieId }) {
         },
         validationSchema: Yup.object({
             review: Yup.string()
-                .max(200, 'Review cannot exceed 200 characters'),
+                .max(200, 'Review cannot exceed 200 chars'),
             rating: Yup.number()
                 .min(0.5, 'Rating must be at least 0.5')
                 .max(5, 'Rating cannot exceed 5')
         }),
+        onSubmit: (values) => {
+            addReview(values)
+        }
     });
+
+
 
     useEffect(() => {
       const fetchReview = async () => {
@@ -66,7 +95,7 @@ export default function RateCard({ movieId }) {
     };
   
     return (
-      <div className="bg-slate-600 rounded-lg flex flex-col h-min items-center p-2 gap-4">
+      <div className="bg-slate-600 w-64 rounded-lg flex flex-col h-min items-center p-2 gap-4">
         <div
           className="review-btn"
           onClick={() => setShowReviewSection((prev) => !prev)}
@@ -95,7 +124,11 @@ export default function RateCard({ movieId }) {
                   rows="6"
                   {...formik.getFieldProps('review')}
                 ></textarea>
-                <button className="big-btn">SAVE</button>
+                <p className='char-counter'>{formik.values.review.length}/200</p>
+                {formik.touched.review && <p className='char-counter'>{formik.errors.review}</p>}
+                {msg && <p className='char-counter'>{msg}</p>}
+                <button className="big-btn" onClick={formik.handleSubmit}>SAVE</button>
+                
               </>
             ) : (
               <p>
