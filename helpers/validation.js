@@ -3,7 +3,7 @@ export const isValidateCommentReview = (comment) => {
 };
 
 export const isValidRating = (rating) => {
-    return typeof rating === 'number' && Number.isInteger(Number(rating)) && rating >= 1 && rating <= 10
+    return typeof rating === 'number' && rating >= 0.5 && rating <= 5
 };
 
 

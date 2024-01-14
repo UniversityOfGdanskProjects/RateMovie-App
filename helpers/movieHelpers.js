@@ -40,7 +40,7 @@ export const addMovieToAction = async (req, res, actionType) => {
 };
 
 export const getMoviesByRelation = async (req, res, relationType) => {
-    const { userId } = req.body;
+    const { userId } = req.params;
     const session = driver.session();
 
     try {
@@ -52,20 +52,14 @@ export const getMoviesByRelation = async (req, res, relationType) => {
 
         const query = `
             MATCH (u:User {userId: $userId})-[r:${relationType}]->(m:Movie)
-            OPTIONAL MATCH (m)<-[:DIRECTED]-(director:Person)
-            OPTIONAL MATCH (m)<-[:ACTED_IN]-(actor:Person)
-            RETURN m, COLLECT(DISTINCT director) AS directors, 
-            COLLECT(DISTINCT actor) AS actors,
-            COLLECT(DISTINCT r) AS relationContent
+            RETURN m, COLLECT(DISTINCT r) AS relationContent
         `;
 
         const result = await session.run(query, { userId });
         const data = result.records.map(record => {
             const movie = record.get('m').properties;
-            const directors = record.get('directors').map(director => director.properties);
-            const actors = record.get('actors').map(actor => actor.properties);
             const relationsContent = record.get('relationContent')[0].properties
-            return { ...movie, directors, actors, relationsContent };
+            return { ...movie, relationsContent };
         });
 
         res.status(200).json({ count: data.length, movies: data });
@@ -78,7 +72,7 @@ export const getMoviesByRelation = async (req, res, relationType) => {
 };
 
 export const removeMovieFromAction = async (req, res, actionType) => {
-    const { userId, movieId } = req.body;
+    const { userId, movieId } = req.params;
     const session = driver.session();
 
     try {
@@ -114,19 +108,11 @@ export const removeMovieFromAction = async (req, res, actionType) => {
 };
 
 export const getRelationByMovieAndUser = async (req, res, relationType) => {
-    const { userId, movieId } = req.query;
+    const { userId, movieId } = req.params;
     console.log(userId, movieId)
     const session = driver.session();
   
     try {
-      const userExists = await checkNodeExistence(session, 'User', 'userId', userId);
-      const movieExists = await checkNodeExistence(session, 'Movie', 'id', movieId);
-  
-      if (!userExists || !movieExists) {
-        res.status(404).json({ error: 'User or Movie not found' });
-        return;
-      }
-  
       const query = `
         MATCH (u: User {userId: $userId})-[r:${relationType}]->(m: Movie {id: $movieId})
         RETURN r
@@ -136,8 +122,8 @@ export const getRelationByMovieAndUser = async (req, res, relationType) => {
       const result = await session.run(query, { userId, movieId });
   
       if (result.records.length > 0) {
-        const createdRelationship = result.records[0].get('r').properties;
-        res.status(200).json(createdRelationship);
+        const foundRelationship = result.records[0].get('r').properties;
+        res.status(200).json(foundRelationship);
       } else {
         res.status(404).json({ error: 'Relationship not found' });
       }

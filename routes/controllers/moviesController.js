@@ -2,7 +2,7 @@ import driver from "../../db/neo4jDriver.js";
 import { config } from 'dotenv';
 import { checkNodeExistence,
      checkRelationshipExistence } from "../../helpers/checkExistence.js";
-import { addMovieToAction } from "../../helpers/movieHelpers.js";
+import { addMovieToAction, removeMovieFromAction } from "../../helpers/movieHelpers.js";
 import { isValidateCommentReview, isValidRating } from "../../helpers/validation.js";
 
 config()
@@ -259,6 +259,8 @@ export const rateMovie = async (req, res) => {
     const { userId, rating, review, date } = req.body;
     const session = driver.session();
 
+    console.log(userId, rating, review, date, movieId)
+
     const newDate = date ? date : new Date().toISOString().split('T')[0]
 
     try {
@@ -388,4 +390,19 @@ export const addMovieToWatchlist = async (req, res) => {
 
 export const addMovieToFollowed = async (req, res) => {
     await addMovieToAction(req, res, 'FOLLOWED');
+};
+
+export const removeMovieFromFavourites = async (req, res) => {
+    await removeMovieFromAction(req, res, 'FAVOURITES');
+};
+export const removeMovieFromIgnored = async (req, res) => {
+    await removeMovieFromAction(req, res, 'IGNORES');
+};
+
+export const removeMovieFromWatchlist = async (req, res) => {
+    await removeMovieFromAction(req, res, 'ADDED_TO_WATCHLIST');
+};
+
+export const removeMovieFromFollowed = async (req, res) => {
+    await removeMovieFromAction(req, res, 'FOLLOWED');
 };

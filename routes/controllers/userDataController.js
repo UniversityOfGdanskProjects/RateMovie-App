@@ -28,3 +28,19 @@ export const getReviewedMovies = async (req, res) => {
 export const getReviewByMovieAndUser = async (req, res) => {
     await getRelationByMovieAndUser(req, res, 'REVIEWED');
 }
+
+export const getFavouriteByMovieAndUser = async (req, res) => {
+    await getRelationByMovieAndUser(req, res, 'FAVOURITES');
+}
+
+export const getIgnoredByMovieAndUser = async (req, res) => {
+    await getRelationByMovieAndUser(req, res, 'IGNORES');
+}
+
+export const getFollowedByMovieAndUser = async (req, res) => {
+    await getRelationByMovieAndUser(req, res, 'FOLLOWED');
+}
+
+export const getWathlistByMovieAndUser = async (req, res) => {
+    await getRelationByMovieAndUser(req, res, 'ADDED_TO_WATCHLIST');
+}
