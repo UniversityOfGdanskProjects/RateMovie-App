@@ -36,11 +36,32 @@
     }
 
 
-    input {
-      @apply text-slate-900 p-2;
+    input, option, select {
+      @apply text-slate-900 bg-slate-200 p-2 rounded-lg;
     }
+
     .char-counter {
       @apply text-slate-400 text-sm;
+    }
+
+    .search-form {
+      @apply mx-auto mb-3 sm:w-full md:w-full lg:w-3/4 xl:w-2/3 p-3 bg-slate-700 shadow-xl;
+      
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        justify-content: space-between;
+        select, option, input {
+          flex: 1
+        }
+      }
+      button {
+        width: min-content;
+      }
     }
 
     .users-list-page {

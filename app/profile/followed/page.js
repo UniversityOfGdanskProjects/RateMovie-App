@@ -22,7 +22,7 @@ export default function FollowedPage() {
       }
     };
     if (user) fetchFollowedList(user.id);
-  }, [user.id]);
+  }, []);
 
   return (
     <section className='users-list-page'>

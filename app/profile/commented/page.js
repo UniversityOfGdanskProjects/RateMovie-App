@@ -7,9 +7,8 @@ import LoadingPage from '@/components/LoadingPage';
 export default function CommentedPage() {
   const { user } = useContext(UserContext);
   const [commentedMovies, setCommentedMovies] = useState([]);
-  const [isLoading, setIsLoading] = setIsLoading(true)
+  const [isLoading, setIsLoading] = useState(true)
   
-
   useEffect(() => {
     const fetchCommentedList = async (userId) => {
       try {

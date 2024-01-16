@@ -56,7 +56,7 @@ export default function MovieDetailsPage({ params }) {
             </div>
             <div className='backdrop-rating'>
                     <TbStar className='star'/>
-                    <p className='rating-avg'>{movie.rating_avg.toFixed(2)}</p>
+                    <p className='rating-avg'>{movie.rating_avg?.toFixed(2)}</p>
                     <p className='rating-count text-slate-400'>{movie.rating_count.low} ratings</p>
             </div>
             <div className="backdrop-gradient"></div>

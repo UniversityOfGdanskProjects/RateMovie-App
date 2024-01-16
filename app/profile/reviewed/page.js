@@ -23,7 +23,7 @@ export default function ReviewedPage() {
     };
 
     if (user) fetchReviewedList(user.id);
-  }, [user.id]);
+  }, []);
 
   return (
     <section className='users-list-page'>

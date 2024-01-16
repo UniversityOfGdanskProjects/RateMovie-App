@@ -23,7 +23,7 @@ export default function IgnoredPage() {
     };
 
     if (user) fetchIgnoredList(user.id);
-  }, [user.id]);
+  }, []);
 
   return (
     <section className='users-list-page'>

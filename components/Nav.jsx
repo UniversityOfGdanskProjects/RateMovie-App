@@ -30,7 +30,7 @@ export default function Nav() {
         </Link>
         }
         <Link href='/search'>
-          <button className='big-btn py-1 px-3 flex flex-center items-center gap-2' onClick={()=>setUser(null)}>
+          <button className='big-btn py-1 px-3 flex flex-center items-center gap-2'>
             <p>Search</p><TbSearch />
           </button>
         </Link>

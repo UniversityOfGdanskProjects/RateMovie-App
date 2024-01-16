@@ -8,17 +8,17 @@ import { UserContext } from '@/context/userContextProvider';
 
 
 export default function ProfileLayout({ children }) {
-    // const {user} = useContext(UserContext)
+    const {user} = useContext(UserContext)
 
-    const user = {
-        id: "598fde00-d21b-4bee-8b99-a2a0b17a809f"
-    }
+    // const user = {
+    //     id: "598fde00-d21b-4bee-8b99-a2a0b17a809f"
+    // }
 
     return (
         <>
         { user &&
                 <section>
-                <nav className='bg-slate-700 flex p-2 gap-2'>
+                <nav className='bg-slate-700 flex flex-wrap p-2 gap-2'>
                 <Link href='/profile'>
                     <button className='big-btn'>
                     Profile <TbUser className='text-xl' />
@@ -58,7 +58,7 @@ export default function ProfileLayout({ children }) {
             </section>
         }
         {!user && 
-                    <Link href='/login'>
+                <Link href='/login'>
                     <button className='big-btn'>
                            Sign In !!!
                    </button>

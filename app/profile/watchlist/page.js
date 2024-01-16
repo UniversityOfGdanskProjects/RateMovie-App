@@ -23,7 +23,7 @@ export default function WatchlistPage() {
     };
 
     if (user) fetchWatchlist(user.id);
-  }, [user.id]);
+  }, []);
 
   return (
     <section className='users-list-page'>
