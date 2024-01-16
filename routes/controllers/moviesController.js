@@ -40,15 +40,26 @@ export const getMovies = async (req, res) => {
 
 export const getPopularMovies = async (req, res) => {
     const session = driver.session();
-    try {
-        const result = await session.executeRead(tx => tx.run(`
+    const {userId} = req.query
+    const query = userId ?  `
             MATCH (u:User)-[r:REVIEWED]->(m:Movie)
+            OPTIONAL MATCH (m)-[:IN_GENRE]->(genre: Genre)
+            OPTIONAL MATCH (u2: User {userId: "${userId}"})-[ignores:IGNORES]->(m)
+            WITH m, COUNT(DISTINCT r) AS rating_count, COLLECT (DISTINCT genre) as genres, AVG(r.rating) AS rating_avg, ignores
+            WHERE ignores IS NULL
+            RETURN m, rating_count, genres, rating_avg
+            ORDER BY rating_count DESC
+            LIMIT 20` 
+            : 
+            `MATCH (u:User)-[r:REVIEWED]->(m:Movie)
             OPTIONAL MATCH (m)-[:IN_GENRE]->(genre: Genre)
             WITH m, COUNT(DISTINCT r) AS rating_count, COLLECT (DISTINCT genre) as genres, AVG(r.rating) AS rating_avg
             RETURN m, rating_count, genres, rating_avg
             ORDER BY rating_count DESC
-            LIMIT 20
-        `));
+            LIMIT 20`
+
+    try {
+        const result = await session.executeRead(tx => tx.run(query));
 
         const data = result.records.map(record => {
             const movie = record.get('m').properties;
