@@ -27,8 +27,7 @@ export default function MovieTrailer({ movie }) {
       )}
 
       <div className="trailer-list">
-        {movie && movie.trailers &&
-          Object.keys(movie.trailers).map((key) => (
+        { Object.keys(movie.trailers).map((key) => (
             <button key={key} className="big-btn" onClick={() => playTrailer(movie.trailers[key])}>
               Play Trailer {parseInt(key) + 1}
             </button>

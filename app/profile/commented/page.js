@@ -2,10 +2,13 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { UserContext } from '@/context/userContextProvider';
 import MovieList from '@/components/MovieList';
+import LoadingPage from '@/components/LoadingPage';
 
 export default function CommentedPage() {
   const { user } = useContext(UserContext);
   const [commentedMovies, setCommentedMovies] = useState([]);
+  const [isLoading, setIsLoading] = setIsLoading(true)
+  
 
   useEffect(() => {
     const fetchCommentedList = async (userId) => {
@@ -14,6 +17,7 @@ export default function CommentedPage() {
         if (response.ok) {
           const data = await response.json();
           setCommentedMovies(data.movies);
+          setIsLoading(false)
         } else {
           console.error('Failed to fetch data. Status:', response.status);
         }
@@ -27,10 +31,15 @@ export default function CommentedPage() {
   }, []);
 
   return (
-    <section className='users-list-page'>
+     !isLoading ? (
+      <section className='users-list-page'>
       <h1>Commented Movies</h1>
-      {commentedMovies.length !== 0 && <p>You have commented on {commentedMovies.length} movies</p>}
-      {commentedMovies && <MovieList movies={commentedMovies} isPersonal={true} />}
-    </section>
+      <p>You have commented on {commentedMovies.length} movies</p>
+      <MovieList movies={commentedMovies} isPersonal={true} />
+      </section>
+    ) : (
+      <LoadingPage />
+    )
+    
   );
 }

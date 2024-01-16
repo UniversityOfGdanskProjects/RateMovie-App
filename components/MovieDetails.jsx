@@ -16,7 +16,7 @@ export default function MovieDetails({ movie }) {
           <p>
             ORIGINAL LANGUAGE <span>{movie.original_language}</span>
           </p>
-          {movie.budget && movie.budget.low !== 0 && (
+          {movie.budget.low !== 0 && (
             <p>
               BUDGET <span>{movie.budget.low} $</span>
             </p>
@@ -26,8 +26,7 @@ export default function MovieDetails({ movie }) {
       <div>
         <h2>Directors & Actors</h2>
         <div className='crew'>
-          {movie.directors &&
-            movie.directors.map((director, index) => {
+          {movie.directors.map((director, index) => {
               return (
                 <div key={index} className='person-card'>
                   <img src={`${director.profile_path}`} />
@@ -38,8 +37,7 @@ export default function MovieDetails({ movie }) {
                 </div>
               );
             })}
-          {movie.actors &&
-            movie.actors.map((actor, index) => {
+          {movie.actors.map((actor, index) => {
               return (
                 <div key={index} className='person-card'>
                   { 
