@@ -6,7 +6,7 @@ import {
     getPopularMovies, 
     getMovieById, 
     searchMovies, 
-    searchMoviesByDirectorOrActor,
+    // searchMoviesByDirectorOrActor,
     rateMovie,
     commentMovie,
     addMovieToFavourites,
@@ -16,7 +16,8 @@ import {
     removeMovieFromIgnored,
     removeMovieFromWatchlist,
     removeMovieFromFollowed,
-    removeMovieFromFavourites
+    removeMovieFromFavourites,
+    getGenres
  } from "./controllers/moviesController.js";
 
 const moviesRoutes = express.Router();
@@ -24,8 +25,8 @@ const moviesRoutes = express.Router();
 moviesRoutes.route('/api/movies').get(getMovies);
 moviesRoutes.route('/api/movies/popular').get(getPopularMovies);
 moviesRoutes.route('/api/movie/:movieId').get(getMovieById);
+// moviesRoutes.route('/api/movies/search').get(searchMovies);
 moviesRoutes.route('/api/movies/search').get(searchMovies);
-moviesRoutes.route('/api/movies/searchByActorOrDirector').get(searchMoviesByDirectorOrActor);
 moviesRoutes.route('/api/movies/:movieId/rate').post(rateMovie);
 moviesRoutes.route('/api/movies/:movieId/comment').post(commentMovie);
 
@@ -38,6 +39,8 @@ moviesRoutes.delete('/api/removeFromIgnored/:userId/:movieId', removeMovieFromIg
 moviesRoutes.delete('/api/removeFromWatchlist/:userId/:movieId', removeMovieFromWatchlist);
 moviesRoutes.delete('/api/removeFromFollowed/:userId/:movieId', removeMovieFromFollowed);
 moviesRoutes.delete('/api/removeFromFavourites/:userId/:movieId', removeMovieFromFavourites);
+
+moviesRoutes.get('/api/genres', getGenres)
 
 
 

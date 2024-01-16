@@ -43,8 +43,9 @@ export const getPopularMovies = async (req, res) => {
     try {
         const result = await session.executeRead(tx => tx.run(`
             MATCH (u:User)-[r:REVIEWED]->(m:Movie)
-            WITH m, COUNT(DISTINCT r) AS rating_count, AVG(r.rating) AS rating_avg
-            RETURN m, rating_count,  rating_avg
+            OPTIONAL MATCH (m)-[:IN_GENRE]->(genre: Genre)
+            WITH m, COUNT(DISTINCT r) AS rating_count, COLLECT (DISTINCT genre) as genres, AVG(r.rating) AS rating_avg
+            RETURN m, rating_count, genres, rating_avg
             ORDER BY rating_count DESC
             LIMIT 20
         `));
@@ -53,8 +54,9 @@ export const getPopularMovies = async (req, res) => {
             const movie = record.get('m').properties;
             const rating_count = record.get('rating_count');
             const rating_avg = record.get('rating_avg')
+            const genres = record.get('genres').map(genre => genre.properties);
 
-            return { ...movie, rating_avg, rating_count};
+            return { ...movie, genres, rating_avg, rating_count};
         });
 
         res.json(data);
@@ -157,50 +159,64 @@ const buildQuery = ({ title, genre, rating, year, sortBy, sortOrder, name, userI
     return `${queryMatch}${queryWith}${queryWhere}${queryReturn}${orderQuery}`;
 };
 
-export const searchMovies = async (req, res) => {
-    const { title, genre, rating, year, sortBy, sortOrder, userId } = req.query;
+export const getGenres = async (req, res) => {
     const session = driver.session();
-    
-    if (userId) {
-        const userExists = await checkNodeExistence(session, 'User', 'userId', userId);
-
-        if (!userExists) {
-            res.status(404).json({ error: 'User not found' });
-            return;
-        }
-    }
-
     try {
-        const query = buildQuery({ title, genre, rating, year, sortBy, sortOrder, userId });
-        console.log(query);
-
-        const result = await session.executeRead(tx => tx.run(query, {
-            title: title,
-            genre: genre,
-            rating: parseInt(rating),
-            year: year
-        }));
-
-        const data = result.records.map(record => {
-            const movie = record.get('m').properties;
-            const rating_avg = record.get('rating_avg')
-            const rating_count = record.get('rating_count')
-
-            return { ...movie, rating_avg, rating_count };
-        });
-
-        res.json(data);
-    } catch (error) {
-        console.error('Error searching movies:', error);
+        const result = await session.executeRead(tx => tx.run("MATCH (n:Genre) RETURN n"))
+        const data = result.records.map(record => record.get('n').properties)
+        res.json(data)
+    } catch {
         res.status(500).json({ error: 'Internal Server Error' });
     } finally {
         await session.close();
     }
-};
+}
 
-export const searchMoviesByDirectorOrActor = async (req, res) => {
-    const { name, genre, rating, year, sortBy, sortOrder, userId } = req.query;
-    const session = driver.session();
+// export const searchMovies = async (req, res) => {
+//     const { title, genre, rating, year, sortBy, sortOrder, userId } = req.query;
+//     const session = driver.session();
+    
+//     if (userId) {
+//         const userExists = await checkNodeExistence(session, 'User', 'userId', userId);
+
+//         if (!userExists) {
+//             res.status(404).json({ error: 'User not found' });
+//             return;
+//         }
+//     }
+
+//     try {
+//         const query = buildQuery({ title, genre, rating, year, sortBy, sortOrder, userId });
+//         console.log(query);
+
+//         const result = await session.executeRead(tx => tx.run(query, {
+//             title: title,
+//             genre: genre,
+//             rating: parseInt(rating),
+//             year: year
+//         }));
+
+//         const data = result.records.map(record => {
+//             const movie = record.get('m').properties;
+//             const genres = record.get('genres').map(genre => genre.properties);
+//             const rating_avg = record.get('rating_avg')
+//             const rating_count = record.get('rating_count')
+
+//             return { ...movie, genres, rating_avg, rating_count };
+//         });
+
+//         res.json(data);
+//     } catch (error) {
+//         console.error('Error searching movies:', error);
+//         res.status(500).json({ error: 'Internal Server Error' });
+//     } finally {
+//         await session.close();
+//     }
+// };
+
+export const searchMovies = async (req, res) => {
+    const { title, name, genre, rating, year, sortBy, sortOrder, userId } = req.query;
+    const session = driver.session(title, name, genre, rating, year, sortBy, sortOrder, userId );
 
     if (userId) {
         const userExists = await checkNodeExistence(session, 'User', 'userId', userId);
@@ -212,7 +228,7 @@ export const searchMoviesByDirectorOrActor = async (req, res) => {
     }
 
     try {
-        const query = buildQuery({ name, genre, rating, year, sortBy, sortOrder, userId })
+        const query = buildQuery({ title, name, genre, rating,year, sortBy, sortOrder, userId })
         console.log(query);
 
         const result = await session.executeRead(tx => tx.run(query, {
@@ -224,10 +240,11 @@ export const searchMoviesByDirectorOrActor = async (req, res) => {
 
         const data = result.records.map(record => {
             const movie = record.get('m').properties;
+            const genres = record.get('genres').map(genre => genre.properties);
             const rating_avg = record.get('rating_avg')
             const rating_count = record.get('rating_count')
 
-            return { ...movie, rating_count, rating_avg };
+            return { ...movie, genres, rating_count, rating_avg };
         });
 
         res.json(data);
