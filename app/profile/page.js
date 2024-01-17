@@ -10,9 +10,11 @@ export default function ProfilePage() {
     const { user } = useContext(UserContext)
 
     return (
-      <section className='bg-pink-800'>
-
-
+      <section >
+      { user && user.username &&
+            <h1 className='msg'>Welcome {user.username}!</h1>
+      }
+      
 
       </section>
     )

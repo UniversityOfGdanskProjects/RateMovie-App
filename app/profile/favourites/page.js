@@ -34,7 +34,7 @@ export default function favPage() {
     return (
         <section className='users-list-page'>
             <h1 className=''>Favourites</h1>
-            {movies.length !== 0 && <p>You have {movies.length} favourtie movies</p>}
+            {movies && <p>You have {movies.length} favourtie movies</p>}
             {movies && <MovieList movies={movies} isPersonal={true}/>}
         </section>
     )
