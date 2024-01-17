@@ -4,13 +4,13 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { UserContext } from "@/context/userContextProvider";
 
-export default function LoginForm() {
+export default function LoginForm({isForAdmin}) {
   const { user, setUser } = useContext(UserContext);
   const [loginMessage, setLoginMessage] = useState(null);
 
   const loginUser = async (username, password, formik) => {
     try {
-      const response = await fetch("http://localhost:7000/api/users/login", {
+      const response = await fetch(`http://localhost:7000/api/${isForAdmin ? 'admin' : 'users'}/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -24,14 +24,13 @@ export default function LoginForm() {
       }
 
       const data = await response.json();
-      setUser(data.user);
-      console.log(data.user.id, data.user.username);
+      console.log({...data.user, token: data.token })
+      setUser({...data.user, token: data.token });
 
       formik.resetForm();
       setLoginMessage("Login successful");
 
     } catch (error) {
-      console.error("Error during login:", error);
       setLoginMessage("Internal Server Error");
     }
   };
@@ -50,27 +49,30 @@ export default function LoginForm() {
     },
   });
     return (
-    <div>
-      <h2>Login form</h2>
+    <>
+      <form className="form" onSubmit={formik.handleSubmit}>
+      {/* <h2>{isForAdmin && "Admin "}Login form</h2> */}
       {loginMessage && <div>{loginMessage}</div>}
-      <form onSubmit={formik.handleSubmit}>
-        <label htmlFor="username">Username: </label>
-        <input id="username" type="text" {...formik.getFieldProps('username')} />
-        {formik.touched.username && formik.errors.username ? (
-          <div>{formik.errors.username}</div>
-        ) : null}
-        <label htmlFor="password">Password: </label>
+        <label htmlFor="username">Username:
+          <input id="username1" type="text" {...formik.getFieldProps('username')} />
+          {formik.touched.username && formik.errors.username ? (
+            <div>{formik.errors.username}</div>
+          ) : null}
+         </label>
+        <label htmlFor="password">Password: 
         <input
-          id="password"
+          id="password1"
           type="password"
           {...formik.getFieldProps('password')}
         />
         {formik.touched.password && formik.errors.password ? (
           <div>{formik.errors.password}</div>
         ) : null}
-        <br />
-        <button className='small-btn' type="submit">Submit</button>
+        </label>
+        <div className='buttons'>
+        <button className='big-btn' type="submit">Submit</button>
+        </div>
       </form>
-    </div>
+    </>
   )
 }

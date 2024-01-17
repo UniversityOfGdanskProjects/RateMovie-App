@@ -64,7 +64,7 @@ export default function SearchPage() {
   const displayedMoviesList = movies.slice(0, displayedMovies);
 
   return (
-    <section className='px-3 pb-3'>
+    <section className='p-3'>
       {genres && (
         <SearchForm
           searchQuery={searchQuery}
@@ -74,7 +74,7 @@ export default function SearchPage() {
         />
       )}
       {!isLoading && movies ? (
-        <>
+        <><br></br>
           <MovieList movies={displayedMoviesList} />
           {displayedMovies < movies.length && (
             <button className="big-btn m-auto mt-3" onClick={handleLoadMore}>Load More</button>

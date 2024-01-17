@@ -4,13 +4,15 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import Link from 'next/link'
 
-export default function RegisterForm() {
+export default function RegisterForm({isForAdmin}) {
   const [registerMessage, setRegisterMessage] = useState(null);
   const [registerError, setRegisterError] = useState(null);
 
   const registerUser = async (values, formik) => {
+    console.log(values)
     try {
-      const response = await fetch("http://localhost:7000/api/users/register", {
+      const url = isForAdmin ? "http://localhost:7000/api/admin/register" : "http://localhost:7000/api/users/register"
+      const response = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -41,6 +43,7 @@ export default function RegisterForm() {
       confirmPassword: "",
       email: "",
       acceptTerms: false,
+      adminSecret: isForAdmin ? "" : undefined,
     },
     validationSchema: Yup.object({
       username: Yup.string().required("Name is required").matches(
@@ -59,6 +62,7 @@ export default function RegisterForm() {
         'Wrong email format'
       ),
       acceptTerms: Yup.bool().oneOf([true], "You must accept the terms and conditions"),
+      adminSecret: isForAdmin ? Yup.string().required('Admin Secret is required') : undefined,
     }),
     onSubmit: (values, { resetForm }) => {
       registerUser(values, { resetForm });
@@ -66,27 +70,27 @@ export default function RegisterForm() {
   });
 
   return (
-    <div>
-      <h2>Register form</h2>
-      {registerError && <div>{registerError}</div>}
-      <form onSubmit={formik.handleSubmit}>
-        <label htmlFor="username">Username: </label>
-        <input id="username" type="text" {...formik.getFieldProps('username')} />
-        {formik.touched.username && formik.errors.username ? (
-          <div>{formik.errors.username}</div>
-        ) : null}
-        <br />
-        <label htmlFor="password">Password: </label>
-        <input
-          id="password"
-          type="password"
-          {...formik.getFieldProps('password')}
-        />
-        {formik.touched.password && formik.errors.password ? (
-          <div>{formik.errors.password}</div>
-        ) : null}
-        <br />
-        <label htmlFor="confirmPassword">Confirm Password: </label>
+    <>
+      <form className="form" onSubmit={formik.handleSubmit}>
+        {registerError && <div>{registerError}</div>}
+        {/* <h2>{isForAdmin ? 'Admin Register form' : 'Register form'}</h2> */}
+        <label htmlFor="username">Username: 
+          <input id="username" type="text" {...formik.getFieldProps('username')} />
+          {formik.touched.username && formik.errors.username ? (
+            <div>{formik.errors.username}</div>
+          ) : null}
+        </label>
+        <label htmlFor="password">Password: 
+          <input
+            id="password"
+            type="password"
+            {...formik.getFieldProps('password')}
+          />
+          {formik.touched.password && formik.errors.password ? (
+            <div>{formik.errors.password}</div>
+          ) : null}
+        </label>
+        <label htmlFor="confirmPassword">Confirm Password: 
         <input
           id="confirmPassword"
           type="password"
@@ -95,18 +99,31 @@ export default function RegisterForm() {
         {formik.touched.confirmPassword && formik.errors.confirmPassword ? (
           <div>{formik.errors.confirmPassword}</div>
         ) : null}
-        <br />
-        <label htmlFor="email">Email: </label>
-        <input
-          id="email"
-          type="email"
-          {...formik.getFieldProps('email')}
-        />
-        {formik.touched.email && formik.errors.email ? (
-          <div>{formik.errors.email}</div>
-        ) : null}
-        <br />
-        <label>
+        </label>
+        <label htmlFor="email">Email: 
+          <input
+            id="email"
+            type="email"
+            {...formik.getFieldProps('email')}
+          />
+          {formik.touched.email && formik.errors.email ? (
+            <div>{formik.errors.email}</div>
+          ) : null}
+        </label>
+        {isForAdmin && (
+          <label htmlFor="adminSecret">
+            Admin Secret: 
+            <input
+              id="adminSecret"
+              type="password"
+              {...formik.getFieldProps('adminSecret')}
+            />
+            {formik.touched.adminSecret && formik.errors.adminSecret ? (
+              <div>{formik.errors.adminSecret}</div>
+            ) : null}
+          </label>
+        )}
+        <label className='checkbox'>
           <input
             id="acceptTerms"
             type="checkbox"
@@ -117,16 +134,20 @@ export default function RegisterForm() {
         {formik.touched.acceptTerms && formik.errors.acceptTerms ? (
           <div>{formik.errors.acceptTerms}</div>
         ) : null}
-        <br />
-        <button className='small-btn' type="submit">Submit</button>
+        <div className='buttons'>
+        <button className='big-btn' type="submit">Submit</button>
+        </div>
       </form>
-      {registerMessage && (<>
-        <div>{registerMessage}</div>
-        <Link href='/login'>
-          <button className='small-btn'>Sign In</button>
-        </Link>
-      </>
+      {registerMessage && (
+        <>
+          <div className='msg'>{registerMessage}</div>
+          {!isForAdmin && (
+            <Link href="/login">
+              <button className="big-btn">Sign In</button>
+            </Link>
+          )}
+        </>
       )}
-    </div>
+    </>
   );
 }

@@ -16,7 +16,7 @@
       @apply font-bold text-slate-200;
     }
     .small-btn {
-      @apply bg-slate-500 hover:bg-slate-600 text-slate-200 py-1 px-3 rounded-lg;
+      @apply bg-slate-500 hover:bg-slate-600 text-slate-200 py-1 px-3 rounded-lg flex items-center gap-2;
     }
     .big-btn {
       @apply bg-pink-800 hover:bg-pink-900 py-2 px-4 rounded-lg shadow-xl flex items-center gap-2;
@@ -27,12 +27,16 @@
 
     section {
       @apply m-auto sm:w-full md:w-full lg:w-3/4 xl:w-2/3 shadow-xl;
+      // height: 100vh;
     }
     .title {
       @apply text-5xl font-bold;
     }
     textarea{
       @apply text-slate-900 p-2 bg-slate-300;
+    }
+    .msg {
+      @apply m-auto text-center rounded-lg sm:w-full md:w-full lg:w-3/4 xl:w-2/3 p-3
     }
 
 
@@ -44,9 +48,9 @@
       @apply text-slate-400 text-sm;
     }
 
-    .search-form {
-      @apply mx-auto mb-3 sm:w-full md:w-full lg:w-3/4 xl:w-2/3 p-3 bg-slate-700 shadow-xl;
-      
+    .form {
+      @apply m-auto rounded-lg sm:w-full md:w-full lg:w-3/4 xl:w-2/3 p-3 bg-slate-700 shadow-xl;
+      // @apply bg-green-900;
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
@@ -59,8 +63,18 @@
           flex: 1
         }
       }
-      button {
-        width: min-content;
+
+      .checkbox {
+        display: block;
+        input {
+          margin: 0.5rem;
+        }
+      }
+      .buttons {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-end;
+        // width: min-content;
       }
     }
 
@@ -104,7 +118,6 @@
     
 
     .backdrop-rating {
-      // background-color: pink;
       z-index: 5;
       position: absolute;
       right: 3rem;
@@ -237,7 +250,6 @@
             }
       
             .rating {
-              // background-color: red;
               font-size: 1.1rem;
               display: flex;
               justify-content: center;

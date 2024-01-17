@@ -23,11 +23,19 @@ export default function Nav() {
       </Link>
       <div className="flex gap-4 flex-center items-center">
         { !user &&
+        <>
         <Link href='/login'>
           <button className="small-btn">
             Sign In
           </button>
         </Link>
+        <Link href='/admin-sign-in'>
+          <button className="small-btn">
+            Sign In As Admin
+          </button>
+        </Link>
+        </>
+
         }
         <Link href='/search'>
           <button className='big-btn py-1 px-3 flex flex-center items-center gap-2'>
@@ -50,6 +58,13 @@ export default function Nav() {
         <Link href='/'>
           <button className='small-btn' onClick={()=>setUser(null)}>
             Sign Out
+          </button>
+        </Link>
+        }
+        { user && user.isAdmin &&
+        <Link href='/admin/manage-users'>
+          <button className='small-btn'>
+            Admin Panel
           </button>
         </Link>
         }

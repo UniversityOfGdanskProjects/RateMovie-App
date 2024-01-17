@@ -4,7 +4,7 @@ import React from 'react';
 
 const SearchForm = ({ searchQuery, setSearchQuery, genres, handleSearch }) => {
   return (
-    <div className='search-form'>
+    <div className='form'>
       <label>
         Title:
         <input
