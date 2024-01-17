@@ -22,16 +22,19 @@ import {
     addMovie,
     removeMovie,
     editMovie,
-    addMovieFromTMDB
+    addMovieFromTMDB,
+    getUserById
 } from "./controllers/adminController.js";
 
 const adminRoutes = express.Router();
 
 adminRoutes.route('/api/admin/register').post(registerAdmin);
 adminRoutes.route('/api/admin/login').post(loginAdmin);
+
 adminRoutes.route('/api/admin/deleteUser').delete(deleteUser);
 adminRoutes.route('/api/admin/editUser').patch(editUser);
 adminRoutes.route('/api/admin/addUser').post(addUser);
+adminRoutes.route('/api/admin/getUser').get(getUserById)
 
 adminRoutes.route('/api/admin/addMovieToFavourites').post(addMovieToFavourites);
 adminRoutes.route('/api/admin/addMovieToIgnored').post(addMovieToIgnored);

@@ -11,13 +11,13 @@ import { commentMovie, rateMovie } from './moviesController.js';
 import { config } from 'dotenv';
 
 config();
-const { JWT_SECRET, TMDB_API_KEY } = process.env
+const { JWT_SECRET, ADMIN_SECRET ,TMDB_API_KEY } = process.env
 
 export const registerAdmin = async (req, res) => {
     const { username, email, password, adminSecret } = req.body;
     const session = driver.session();
 
-    if (adminSecret !== JWT_SECRET) {
+    if (adminSecret !== ADMIN_SECRET) {
         res.status(401).json({ error: 'Unauthorized' });
         return;
     }
@@ -30,11 +30,11 @@ export const registerAdmin = async (req, res) => {
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const emailExists = await checkNodeExistence(session, 'User', 'email', email);
-        if (emailExists) {
-            res.status(400).json({ error: 'Email is already registered' });
-            return;
-        }
+        // const emailExists = await checkNodeExistence(session, 'User', 'email', email);
+        // if (emailExists) {
+        //     res.status(400).json({ error: 'Email is already registered' });
+        //     return;
+        // }
 
         const usernameExists = await checkNodeExistence(session, 'User', 'username', username);
         if (usernameExists) {
@@ -88,6 +88,11 @@ export const loginAdmin = async (req, res) => {
         res.status(200).json({
             message: 'Login successful',
             token: token,
+            user: {
+                isAdmin: true,
+                username: userResult.records[0].get('user').properties.username,
+                id: userResult.records[0].get('user').properties.userId
+            }
         });
     } catch (error) {
         console.error(error);
@@ -98,8 +103,41 @@ export const loginAdmin = async (req, res) => {
 
 };
 
+export const getUserById = async (req,res) => {
+    const { userId } = req.query
+    // console.log(userId)
+    authenticateAdmin(req, res, async () => {
+        const session = driver.session();
+        
+        try {
+            const result = await session.executeRead(async tx => {
+                const queryResult = await tx.run(
+                    'MATCH (user:User {userId: $userId}) RETURN user', 
+                    { userId }
+                );
+
+                const user = queryResult.records[0]?.get('user').properties;
+                return user
+            });
+
+        if (result) {
+            res.status(200).json({ user: result });
+        } else {
+            res.status(404).json({ error: 'User not found' });
+        }
+
+
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: 'Internal Server Error' });
+        } finally {
+            await session.close();
+        }
+    });
+}
+
 export const deleteUser = async (req, res) => {
-    const { userId } = req.body;
+    const { userId } = req.query;
 
     authenticateAdmin(req, res, async () => {
         const session = driver.session();
