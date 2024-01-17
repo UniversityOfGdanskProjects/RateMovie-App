@@ -16,7 +16,8 @@ export default function App() {
   useEffect(() => {
     const fetchPopularMovies = async () => {
       try {
-        const response = await fetch(`http://localhost:7000/api/movies/popular`)
+        const userIdQuery = user ? `?userId=${user.id}` : '';
+        const response = await fetch(`http://localhost:7000/api/movies/popular${userIdQuery}`);
         if (response.ok) {
           const data = await response.json()
           setMovies(data)

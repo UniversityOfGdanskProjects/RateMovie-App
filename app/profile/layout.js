@@ -1,22 +1,30 @@
 'use client'
-import React, {useContext} from 'react';
+import React, {useContext, useEffect} from 'react';
 import Link from 'next/link';
 import { FaHeart } from 'react-icons/fa6';
 import { TbEye, TbBell, TbUser, TbStar, TbMessage } from 'react-icons/tb';
 import { AiOutlineStop } from 'react-icons/ai';
 import { UserContext } from '@/context/userContextProvider';
+import { useRouter } from 'next/navigation';
 
 
 export default function ProfileLayout({ children }) {
     const {user} = useContext(UserContext)
-
     // const user = {
     //     id: "598fde00-d21b-4bee-8b99-a2a0b17a809f"
     // }
+    const router = useRouter();
+    useEffect(() => {
+        if (!user) {
+            router.push('/');
+            return;
+          }
+    })
 
     return (
         <>
         { user &&
+                <>
                 <section>
                 <nav className='bg-slate-700 flex flex-wrap p-2 gap-2'>
                 <Link href='/profile'>
@@ -56,16 +64,10 @@ export default function ProfileLayout({ children }) {
                 </Link>
                 </nav>
             </section>
+            {children}
+            </>
         }
-        {!user && 
-                <Link href='/login'>
-                    <button className='big-btn'>
-                           Sign In !!!
-                   </button>
-                </Link>
-        }
-        {children}
         </>
     );
 }
-``
+

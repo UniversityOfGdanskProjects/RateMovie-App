@@ -45,7 +45,6 @@ export default function SearchPage() {
         ...searchQuery
       });
       if (user) queryParams.set("userId", user.id)
-      console.log(queryParams.toString())
 
       const response = await fetch(`http://localhost:7000/api/movies/search?${queryParams}`);
       const data = await response.json();
