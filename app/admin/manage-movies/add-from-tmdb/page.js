@@ -9,7 +9,9 @@ export default function AddTMDBMovie() {
     const { user } = useContext(UserContext);
     return (
         <section>
+            <h1 className='msg'>Add Movie From TMDB</h1>
             <AddTMDBMovieForm />
+            <br/>
         </section>
     )
 }

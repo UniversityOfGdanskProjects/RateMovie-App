@@ -1,12 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Formik, Field, Form, FieldArray, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
+import DeleteButton from './DeleteButton';
+import { UserContext } from '@/context/userContextProvider';
 
-const EditMovieForm = ({ movieId, user }) => {
+const EditMovieForm = ({ movieId }) => {
     const [movie, setMovie] = useState(null);
     const [errorMessage, setErrorMessage] = useState('');
+    const {user} = useContext(UserContext)
 
     useEffect(() => {
+        console.log(user)
         const fetchMovieDetails = async () => {
             try {
                 const response = await fetch(`http://localhost:7000/api/movie/${movieId}`, {
@@ -168,6 +172,7 @@ const EditMovieForm = ({ movieId, user }) => {
                     })}
                     onSubmit={async (values) => {
                         try {
+                            setErrorMessage("submiting...")
                             console.log(values)
                             const response = await fetch(`http://localhost:7000/api/admin/editMovie?id=${movieId}`, {
                                 method: 'PATCH',
@@ -245,6 +250,7 @@ const EditMovieForm = ({ movieId, user }) => {
                             render={arrayHelpers => (
                                 <div>
                                     {values.images && values.images.length > 0 ? (
+                                        
                                         values.images.map((image, index) => (
                                             <div key={index}>
                                                 <Field
@@ -311,7 +317,9 @@ const EditMovieForm = ({ movieId, user }) => {
                             {renderFieldArray("directors",values)}
                             {renderDoubleFieldArray("actors", values)}
 
-                        <button type="submit" className='big-btn'>Save Changes</button>
+                        <button type="submit" onClick={() => console.log(values)}className='big-btn'>Save Changes</button>
+                        <DeleteButton movieId={movieId} />
+                        
                     </Form>
 
                 )}  

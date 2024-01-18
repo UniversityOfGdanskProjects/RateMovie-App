@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+'use client'
+import React, { useState, useContext } from 'react';
 import { Formik, Field, Form, FieldArray, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
+import { UserContext } from '@/context/userContextProvider';
 
 
-const AddMovieForm = ({ user }) => {
+const AddMovieForm = () => {
     const [errorMessage, setErrorMessage] = useState('');
+    const {user} = useContext(UserContext)
 
     const renderDoubleFieldArray = (name, values) => {
         return (
@@ -279,6 +282,7 @@ const AddMovieForm = ({ user }) => {
                     {renderDoubleFieldArray("actors", values)}
 
                     <button type="submit" onClick={() => console.log("ciekawe")} className='big-btn'>Add Movie</button>
+                    <button>Delete</button>
                 </Form>
             )}
             </Formik>

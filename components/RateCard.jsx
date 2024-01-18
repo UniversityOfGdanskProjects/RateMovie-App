@@ -19,6 +19,46 @@ export default function RateCard({ movieId }) {
     const [inIgnored, setInIgnored] = useState(false)
     const [inFavourites, setInFavourties] = useState(false)
     const [msg, setMsg] = useState('')
+    const [deleteButton, setDeleteButton] = useState(false)
+
+    const addReview = async (values) => {
+      try {
+          setMsg('...adding review')
+
+          const response = await fetch(`http://localhost:7000/api/movies/${movieId}/rate`, {
+              method: "POST",
+              headers: {
+                  "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ userId: user.id, rating: values.rating, review: values.review})
+          })
+          if (response.status === 404 || response.status === 400) {
+              setMsg('problems')
+              return;
+          }
+          setMsg('added review')
+          
+      } catch (error) {
+      }
+  }
+  const formik = useFormik({
+    initialValues: {
+        review: '',
+        rating: 0,
+    },
+    validationSchema: Yup.object({
+        review: Yup.string()
+            .max(200, 'Review cannot exceed 200 chars')
+            .matches(/\S/, 'Review cannot consist of whitespace only')
+            .required("Required"),
+        rating: Yup.number()
+            .min(0.5, 'Rating must be at least 0.5')
+            .max(5, 'Rating cannot exceed 5')
+    }),
+    onSubmit: (values) => {
+        addReview(values)
+    }
+});
 
     const handleIconClick = async (action, type, set) => {
       if (user) {
@@ -65,47 +105,32 @@ export default function RateCard({ movieId }) {
       }
   }
 
-    const addReview = async (values) => {
-        try {
-            setMsg('...adding review')
-
-            const response = await fetch(`http://localhost:7000/api/movies/${movieId}/rate`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ userId: user.id, rating: values.rating, review: values.review})
-            })
-            if (response.status === 404 || response.status === 400) {
-                setMsg('problems')
-                // console.error('błąąąąąąąąąąąąąąąąąąąąąąd')
-                return;
-            }
-
-            console.log('successful adding review')
-            setMsg('added review')
-            
-        } catch (error) {
-            // console.error('Error fetching movie:', error);
+  const handleDelete = async () => {
+    console.log("usuwam")
+    setMsg("...deleting review")
+    try {
+      const response = await fetch(`http://localhost:7000/api/removeFromReviewed/${user.id}/${movieId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
         }
+      })
+    
+    if (response.ok) {
+        setMsg("deleted review succesfuly");
+        formik.resetForm();
+
+
+    } else {
+        const data = await response.json();
+        setMsg(data.error)
     }
 
-    const formik = useFormik({
-        initialValues: {
-            review: '',
-            rating: 0,
-        },
-        validationSchema: Yup.object({
-            review: Yup.string()
-                .max(200, 'Review cannot exceed 200 chars'),
-            rating: Yup.number()
-                .min(0.5, 'Rating must be at least 0.5')
-                .max(5, 'Rating cannot exceed 5')
-        }),
-        onSubmit: (values) => {
-            addReview(values)
-        }
-    });
+    } catch(error) {
+
+    }
+
+  }
 
 
 
@@ -126,14 +151,12 @@ export default function RateCard({ movieId }) {
               const reviewData = await isInReviewed.json();
               setExistingReview(reviewData);
               console.log('Review data:', reviewData);
+              reviewData ? setDeleteButton(true) : setDeleteButton(false)
               formik.setValues({
                 review: reviewData ? reviewData.review : '',
                 rating: reviewData ? reviewData.rating : 0,
             });
               } 
-              // else {
-              //   console.log('Failed to fetch review:', isInReviewed.status, isInReviewed.statusText);
-              // }
           }
         } catch (error) {
           // console.error('Error fetching review:', error);
@@ -183,6 +206,7 @@ export default function RateCard({ movieId }) {
                 {formik.touched.review && <p className='char-counter'>{formik.errors.review}</p>}
                 {msg && <p className='char-counter'>{msg}</p>}
                 <button type="submit" className="big-btn" onClick={formik.handleSubmit}>SAVE</button>
+                {deleteButton && <button className="small-btn" onClick={() => handleDelete()}>DELETE REVIEW</button>}
                 
               </>
             ) : (

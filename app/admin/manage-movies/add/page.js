@@ -8,7 +8,9 @@ export default function addMovie() {
   console.log("sssss", user)
   return (
     <section>
+      <h1 className='msg'>Add Custom Movie</h1>
       <AddMovieForm user={user}/>
+      <br/>
     </section>
   )
 }

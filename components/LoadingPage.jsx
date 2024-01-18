@@ -2,8 +2,7 @@ import React from 'react'
 
 export default function LoadingPage() {
   return (
-    <section className='text-center p-4'>
-        <h2>Loading...</h2>
-    </section>
+        <h2 className='msg'>Loading...</h2>
+
   )
 }

@@ -30,7 +30,7 @@ export default function App() {
     }
 
     fetchPopularMovies()
-  }, [])
+  }, [user])
   return (
     <main className="">
       <section className=''>

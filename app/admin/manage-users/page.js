@@ -16,7 +16,6 @@ export default function ManageUsersPage() {
       userId: '',
       username: '',
       email: '',
-      password: '',
     },
     validationSchema: Yup.object({
       username: Yup.string().required("username is required").matches(
@@ -27,14 +26,51 @@ export default function ManageUsersPage() {
         /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/,
         'Wrong email format'
       ),
-      password: Yup.string().required("Password is required").matches(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-        'Password must be at least 8 characters long and has to contain one lowercase letter, one uppercase letter, one number, and one special character')
     }),
     onSubmit: (values) => {
       handleEditUser(values);
     },
   });
+
+  const passwordFormik = useFormik({
+    initialValues: {
+      newPassword: '',
+    },
+    validationSchema: Yup.object({
+      newPassword: Yup.string().matches(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+        'Password must be at least 8 characters long, cannot contain whitespaces, has to contain one lowercase letter, one uppercase letter, one number, and one special character'
+      ),
+    }),
+    onSubmit: (values) => {
+      handlePasswordChange(values);
+    },
+  });
+
+  const handlePasswordChange = async (values) => {
+    setMsg('changing password...')
+    try {
+      const response = await fetch('http://localhost:7000/api/admin/editUser', {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          password: values.newPassword,
+        }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setMsg('Password changed successfully');
+      } else {
+        setMsg(data.error);
+      }
+    } catch (error) {
+      setMsg('Error changing password', error);
+    }
+  };
 
   const handleSearchUser = async () => {
     setMsg('searching...')
@@ -54,7 +90,6 @@ export default function ManageUsersPage() {
           userId: data.user.userId,
           username: data.user.username,
           email: data.user.email,
-          password: '',
         });
         setMsg('user found')
       } else if (response.status === 404) {
@@ -94,6 +129,7 @@ export default function ManageUsersPage() {
       setMsg('Error updating user', error);
     }
   };
+
 
   const handleDeleteUser = async () => {
     setMsg('deleting...')
@@ -168,26 +204,34 @@ export default function ManageUsersPage() {
                 <div className="error">{formik.errors.email}</div>
               ) : null}
             </label>
-            <label>
-              Password:
+            <div className='buttons'>
+              <button type="submit" className="small-btn">
+                Save Changes
+              </button>
+              <button className="small-btn bg-red-900" onClick={handleDeleteUser}>
+                Delete User
+              </button>
+            </div>
+          </form>
+          <form className="form" onSubmit={passwordFormik.handleSubmit}>
+          <h2>Change Password</h2>
+          <label>
+              New Password:
               <input
                 type="text"
-                name="password"
-                value={formik.values.password}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
+                name="newPassword"
+                value={passwordFormik.values.newPassword}
+                onChange={passwordFormik.handleChange}
+                onBlur={passwordFormik.handleBlur}
               />
-              {formik.touched.password && formik.errors.password ? (
-                <div className="error">{formik.errors.password}</div>
+              {passwordFormik.touched.newPassword && passwordFormik.errors.newPassword ? (
+                <div className="error">{passwordFormik.errors.newPassword}</div>
               ) : null}
             </label>
             <div className='buttons'>
-            <button type="submit" className="small-btn">
-              Save Changes
-            </button>
-            <button className="small-btn bg-red-900" onClick={handleDeleteUser}>
-              Delete User
-            </button>
+              <button className="small-btn">
+                Change Password
+              </button>
             </div>
           </form>
         </>

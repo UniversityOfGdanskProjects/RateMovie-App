@@ -5,7 +5,7 @@ import { UserContext } from '@/context/userContextProvider';
 
 export default function AddTMDBMovieForm() {
     const {user} = useContext(UserContext)
-  const [msg, setMsg] = useState('');
+    const [msg, setMsg] = useState('');
 
   const formik = useFormik({
     initialValues: {
@@ -44,7 +44,6 @@ export default function AddTMDBMovieForm() {
 
   return (
     <>
-      <h2 className='msg'>Add Movie from TMDB</h2>
       <form className="form" onSubmit={formik.handleSubmit}>
         <label>
           Movie ID from TMDB:
