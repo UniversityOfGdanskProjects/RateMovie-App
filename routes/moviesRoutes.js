@@ -16,6 +16,8 @@ import {
     removeMovieFromWatchlist,
     removeMovieFromFollowed,
     removeMovieFromFavourites,
+    removeMovieFromCommented,
+    removeMovieFromReviewed,
     getGenres
  } from "./controllers/moviesController.js";
 
@@ -38,6 +40,8 @@ moviesRoutes.delete('/api/removeFromIgnored/:userId/:movieId', removeMovieFromIg
 moviesRoutes.delete('/api/removeFromWatchlist/:userId/:movieId', removeMovieFromWatchlist);
 moviesRoutes.delete('/api/removeFromFollowed/:userId/:movieId', removeMovieFromFollowed);
 moviesRoutes.delete('/api/removeFromFavourites/:userId/:movieId', removeMovieFromFavourites);
+moviesRoutes.delete('/api/removeFromReviewed/:userId/:movieId', removeMovieFromReviewed);
+moviesRoutes.delete('/api/removeFromCommented/:userId/:movieId', removeMovieFromCommented);
 
 moviesRoutes.get('/api/genres', getGenres)
 

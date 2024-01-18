@@ -30,11 +30,11 @@ export const registerAdmin = async (req, res) => {
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // const emailExists = await checkNodeExistence(session, 'User', 'email', email);
-        // if (emailExists) {
-        //     res.status(400).json({ error: 'Email is already registered' });
-        //     return;
-        // }
+        const emailExists = await checkNodeExistence(session, 'User', 'email', email);
+        if (emailExists) {
+            res.status(400).json({ error: 'Email is already registered' });
+            return;
+        }
 
         const usernameExists = await checkNodeExistence(session, 'User', 'username', username);
         if (usernameExists) {
@@ -191,6 +191,7 @@ export const editUser = async (req, res) => {
                 setClauses.push('user.password = $newPassword');
                 const hashedPassword = await bcrypt.hash(password, 10);
                 queryParams["newPassword"] = hashedPassword
+                
             }
 
             const query = `
@@ -282,7 +283,7 @@ export const removeComment = async (req, res) => {
         try {
             const query = `
                 MATCH ()-[r:COMMENTED]->()
-                WHERE ID(r) = $commentId
+                WHERE r.id = $commentId
                 DELETE r
             `;
 
@@ -306,7 +307,7 @@ export const editComment = async (req, res) => {
 
             const query = `
                 MATCH ()-[c:COMMENTED]->()
-                WHERE ID(c) = $commentId
+                WHERE c.id = $commentId
                 SET c.comment = $newComment
                 RETURN c
             `;
@@ -488,7 +489,7 @@ export const addMovie = async (req, res) => {
 };
 
 export const removeMovie = async (req, res) => {
-    const { movieId } = req.query;
+    const { movieId } = req.body;
     
     await authenticateAdmin(req, res, async () => {
         const session = driver.session();

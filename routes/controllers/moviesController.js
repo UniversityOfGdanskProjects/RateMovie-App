@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid';
 import driver from "../../db/neo4jDriver.js";
 import { config } from 'dotenv';
 import { checkNodeExistence,
@@ -192,47 +193,6 @@ export const getGenres = async (req, res) => {
     }
 }
 
-// export const searchMovies = async (req, res) => {
-//     const { title, genre, rating, year, sortBy, sortOrder, userId } = req.query;
-//     const session = driver.session();
-    
-//     if (userId) {
-//         const userExists = await checkNodeExistence(session, 'User', 'userId', userId);
-
-//         if (!userExists) {
-//             res.status(404).json({ error: 'User not found' });
-//             return;
-//         }
-//     }
-
-//     try {
-//         const query = buildQuery({ title, genre, rating, year, sortBy, sortOrder, userId });
-//         console.log(query);
-
-//         const result = await session.executeRead(tx => tx.run(query, {
-//             title: title,
-//             genre: genre,
-//             rating: parseInt(rating),
-//             year: year
-//         }));
-
-//         const data = result.records.map(record => {
-//             const movie = record.get('m').properties;
-//             const genres = record.get('genres').map(genre => genre.properties);
-//             const rating_avg = record.get('rating_avg')
-//             const rating_count = record.get('rating_count')
-
-//             return { ...movie, genres, rating_avg, rating_count };
-//         });
-
-//         res.json(data);
-//     } catch (error) {
-//         console.error('Error searching movies:', error);
-//         res.status(500).json({ error: 'Internal Server Error' });
-//     } finally {
-//         await session.close();
-//     }
-// };
 
 export const searchMovies = async (req, res) => {
     const { title, name, genre, rating, year, sortBy, sortOrder, userId } = req.query;
@@ -379,7 +339,7 @@ export const commentMovie = async (req, res) => {
         const query = `
             MATCH (u:User {userId: $userId})
             MATCH (m:Movie {id: $movieId})
-            CREATE (u)-[r:COMMENTED {comment: $comment, date: $date}]->(m)
+            CREATE (u)-[r:COMMENTED {id: $commenntId, comment: $comment, date: $date}]->(m)
             RETURN r
         `;
 
@@ -387,6 +347,7 @@ export const commentMovie = async (req, res) => {
             userId,
             movieId,
             comment,
+            commentId: uuidv4(),
             date: new Date().toISOString().split('T')[0],
         }));
 
@@ -400,6 +361,13 @@ export const commentMovie = async (req, res) => {
     }
 };
 
+export const removeMovieFromCommented = async (req, res) => {
+    await removeMovieFromAction(req, res, 'COMMENTED')
+}
+
+export const removeMovieFromReviewed = async (req, res) => {
+    await removeMovieFromAction(req, res, 'REVIEWED')
+}
 
 export const addMovieToFavourites = async (req, res) => {
     await addMovieToAction(req, res, 'FAVOURITES');
