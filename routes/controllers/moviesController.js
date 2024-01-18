@@ -94,20 +94,29 @@ export const getMovieById = async (req, res) => {
                    COLLECT (DISTINCT genre) as genres, COUNT(DISTINCT r) AS rating_count, AVG(r.rating) AS rating_avg
         `, { id: id }));
 
+
+
         if (result.records.length === 0) {
             res.status(404).json({ error: 'Movie not found' });
         } else {
             const movie = result.records[0].get('m').properties;
-            const directors = result.records[0].get('directors').map(director => director.properties);
-            const genres = result.records[0].get('genres').map(genre => genre.properties);
-            const actors = result.records[0].get('actors').map(actor => ({
-                ...actor.actor.properties,
-                character: actor.character
-            }));
+            const directors = result.records[0].get('directors') ? 
+                result.records[0].get('directors').map(director => director.properties) : [];
+            
+            const genres = result.records[0].get('genres') ? 
+                result.records[0].get('genres').map(genre => genre.properties) : [];
+
+            
+            const actors = result.records[0].get('actors') ? 
+                result.records[0].get('actors').map(actor => ({
+                    ...actor.actor?.properties,
+                    ...(actor.character !== null && { character: actor.character })
+                })) : [];
             const rating_count = result.records[0].get('rating_count');
             const rating_avg = result.records[0].get('rating_avg');
 
             const data = { ...movie, directors, actors, genres, rating_avg, rating_count };
+            console.log(data)
             res.json(data);
         }
     } catch (error) {
@@ -251,7 +260,8 @@ export const searchMovies = async (req, res) => {
 
         const data = result.records.map(record => {
             const movie = record.get('m').properties;
-            const genres = record.get('genres').map(genre => genre.properties);
+            const genres = result.records[0].get('genres') ? 
+                result.records[0].get('genres').map(genre => genre.properties) : [];
             const rating_avg = record.get('rating_avg')
             const rating_count = record.get('rating_count')
 

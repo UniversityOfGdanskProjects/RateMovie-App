@@ -393,7 +393,6 @@ export const addMovie = async (req, res) => {
                 runtime,
                 budget,
                 tagline,
-                id,
                 poster_path,
                 release_date,
                 overview,
@@ -406,12 +405,6 @@ export const addMovie = async (req, res) => {
                 actors
             } = req.body;
 
-            const movieExists = await checkNodeExistence(session, 'Movie', 'id', id);
-
-            if (movieExists) {
-                res.status(400).json({ error: 'Movie with the given id already exists' });
-                return;
-            }
 
             const movieQuery = `
                 CREATE (m:Movie {
@@ -431,6 +424,7 @@ export const addMovie = async (req, res) => {
                 })
                 RETURN m
             `;
+            const newId = uuidv4()
 
             const movieResult = await session.executeWrite(tx => tx.run(movieQuery, {
                 trailers,
@@ -438,7 +432,7 @@ export const addMovie = async (req, res) => {
                 runtime,
                 budget,
                 tagline,
-                id,
+                id: newId,
                 poster_path,
                 release_date,
                 overview,
@@ -453,31 +447,34 @@ export const addMovie = async (req, res) => {
             for (const genreId of genres) {
                 const genreQuery = `
                     MATCH (g:Genre)
-                    WHERE ID(g) = $genreId
+                    MATCH (m:Movie)
+                    WHERE g.id = $genreId AND m.id = $movieId
                     CREATE (m)-[:IN_GENRE]->(g)
                 `;
 
-                await session.executeWrite(tx => tx.run(genreQuery, { genreId }));
+                await session.executeWrite(tx => tx.run(genreQuery, { genreId, movieId: newId }));
             }
 
             for (const director of directors) {
                 const directorQuery = `
                     MATCH (d:Person:Director)
-                    WHERE d.id = $director.id
+                    MATCH (m:Movie)
+                    WHERE d.id = $director AND m.id = $movieId
                     CREATE (m)-[:DIRECTED]->(d)
                 `;
 
-                await session.executeWrite(tx => tx.run(directorQuery, { director }));
+                await session.executeWrite(tx => tx.run(directorQuery, { director, movieId: newId  }));
             }
 
             for (const actor of actors) {
                 const actorQuery = `
                     MATCH (a:Person:Actor)
-                    WHERE a.id = $actor.id
+                    MATCH (m:Movie)
+                    WHERE a.id = $actor.id AND m.id = $movieId
                     CREATE (m)<-[:ACTED_IN { character: $actor.character }]-(a)
                 `;
 
-                await session.executeWrite(tx => tx.run(actorQuery, { actor }));
+                await session.executeWrite(tx => tx.run(actorQuery, { actor, movieId: newId }));
             }
 
             res.status(201).json({ message: 'Movie added successfully', movie: movieNode.properties });
@@ -491,7 +488,7 @@ export const addMovie = async (req, res) => {
 };
 
 export const removeMovie = async (req, res) => {
-    const { movieId } = req.params;
+    const { movieId } = req.query;
     
     await authenticateAdmin(req, res, async () => {
         const session = driver.session();
@@ -524,7 +521,7 @@ export const editMovie = async (req, res) => {
 
     await authenticateAdmin(req, res, async () => {
         try {
-            const { id } = req.params;
+            const { id } = req.query;
             const {
                 trailers,
                 images,
@@ -588,8 +585,8 @@ export const editMovie = async (req, res) => {
             }));
 
             const editedMovieNode = editMovieResult.records[0].get('m');
-
-            const deleteGenresQuery = `
+            if (genres) {
+                const deleteGenresQuery = `
                 MATCH (m:Movie {id: $id})-[r:IN_GENRE]->()
                 DELETE r
             `;
@@ -597,47 +594,58 @@ export const editMovie = async (req, res) => {
             await session.executeWrite(tx => tx.run(deleteGenresQuery, { id }));
 
             for (const genreId of genres) {
+                console.log(typeof genreId, genreId)
                 const addGenreQuery = `
+                    MATCH (m: Movie)
                     MATCH (g:Genre)
-                    WHERE ID(g) = $genreId
+                    WHERE g.id = $genreId AND m.id = $movieId
                     CREATE (m)-[:IN_GENRE]->(g)
                 `;
 
-                await session.executeWrite(tx => tx.run(addGenreQuery, { genreId }));
+                await session.executeWrite(tx => tx.run(addGenreQuery, { genreId, movieId: id }));
+                }
             }
 
-            const deleteDirectorsQuery = `
+            if (directors) {
+                const deleteDirectorsQuery = `
                 MATCH (m:Movie {id: $id})-[r:DIRECTED]->()
                 DELETE r
             `;
 
             await session.executeWrite(tx => tx.run(deleteDirectorsQuery, { id }));
-
+                console.log(directors)
             for (const director of directors) {
+
                 const addDirectorQuery = `
+                    MATCH (m: Movie)
                     MATCH (d:Person:Director)
-                    WHERE d.id = $director.id
+                    WHERE d.id = $directorId AND m.id = $movieId
                     CREATE (m)-[:DIRECTED]->(d)
                 `;
 
-                await session.executeWrite(tx => tx.run(addDirectorQuery, { director }));
+                await session.executeWrite(tx => tx.run(addDirectorQuery, { directorId: director, movieId: id }));
+                }
             }
 
-            const deleteActorsQuery = `
-                MATCH (m:Movie {id: $id})<-[r:ACTED_IN]->()
-                DELETE r
-            `;
-
-            await session.executeWrite(tx => tx.run(deleteActorsQuery, { id }));
-
-            for (const actor of actors) {
-                const addActorQuery = `
-                    MATCH (a:Person:Actor)
-                    WHERE a.id = $actor.id
-                    CREATE (m)<-[:ACTED_IN { character: $actor.character }]-(a)
+            if (actors) {
+                console.log(actors)
+                const deleteActorsQuery = `
+                    MATCH (m:Movie {id: $id})<-[r:ACTED_IN]->()
+                    DELETE r
                 `;
 
-                await session.executeWrite(tx => tx.run(addActorQuery, { actor }));
+                await session.executeWrite(tx => tx.run(deleteActorsQuery, { id }));
+
+                for (const actor of actors) {
+                    const addActorQuery = `
+                        MATCH (m: Movie)
+                        MATCH (a:Person:Actor)
+                        WHERE a.id = $actorId AND m.id = $movieId
+                        CREATE (m)<-[:ACTED_IN { character: $character }]-(a)
+                    `;
+
+                    await session.executeWrite(tx => tx.run(addActorQuery, { actorId: actor.id, character: actor.character, movieId: id }));
+                }
             }
 
             res.status(200).json({ message: 'Movie edited successfully', movie: editedMovieNode.properties });
@@ -738,7 +746,7 @@ export const addMovieFromTMDB = async (req, res) => {
                 const addDirectorParams = {
                     id: director.id.toString(),
                     name: director.name,
-                    profile_path: "https://image.tmdb.org/t/p/original" + director.profile_path,
+                    profile_path: director.profile_path ? "https://image.tmdb.org/t/p/original" + director.profile_path : "",
                     movieId: tmdbResponse.id.toString()
                 };
 
@@ -756,7 +764,7 @@ export const addMovieFromTMDB = async (req, res) => {
             const addActorParams = {
                 id: actorData.id.toString(),
                 name: actorData.name,
-                profile_path: "https://image.tmdb.org/t/p/original" + actorData.profile_path,
+                profile_path: actorData.profile_path ? "https://image.tmdb.org/t/p/original" + actorData.profile_path : "",
                 movieId: tmdbResponse.id.toString(),
                 character: actorData.character
             };

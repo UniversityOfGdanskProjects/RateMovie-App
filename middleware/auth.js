@@ -15,7 +15,6 @@ export const generateToken = (userId, isAdmin = false) => {
 
 export const authenticateAdmin = (req, res, next) => {
     const token = req.headers.authorization.split(' ')[1];
-    console.log(token)
 
     if (!token) {
         return res.status(401).json({ error: 'Unauthorized - Missing Token' });

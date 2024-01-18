@@ -6,7 +6,6 @@ import {
     getPopularMovies, 
     getMovieById, 
     searchMovies, 
-    // searchMoviesByDirectorOrActor,
     rateMovie,
     commentMovie,
     addMovieToFavourites,
@@ -25,9 +24,9 @@ const moviesRoutes = express.Router();
 moviesRoutes.route('/api/movies').get(getMovies);
 moviesRoutes.route('/api/movies/popular').get(getPopularMovies);
 moviesRoutes.route('/api/movie/:movieId').get(getMovieById);
-// moviesRoutes.route('/api/movies/search').get(searchMovies);
 moviesRoutes.route('/api/movies/search').get(searchMovies);
 moviesRoutes.route('/api/movies/:movieId/rate').post(rateMovie);
+
 moviesRoutes.route('/api/movies/:movieId/comment').post(commentMovie);
 
 moviesRoutes.route('/api/movies/:movieId/addToFavourites').post(addMovieToFavourites);
