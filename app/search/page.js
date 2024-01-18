@@ -22,7 +22,7 @@ export default function SearchPage() {
   const [genres, setGenres] = useState([]);
   const [movies, setMovies] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [displayedMovies, setDisplayedMovies] = useState(30); // Liczba już wyświetlonych filmów
+  const [displayedMovies, setDisplayedMovies] = useState(30);
 
   useEffect(() => {
     const fetchGenres = async () => {

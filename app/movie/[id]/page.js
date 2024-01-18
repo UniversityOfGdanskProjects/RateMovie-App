@@ -57,7 +57,7 @@ export default function MovieDetailsPage({ params }) {
             <div className='backdrop-rating'>
                     <TbStar className='star'/>
                     <p className='rating-avg'>{movie.rating_avg?.toFixed(2)}</p>
-                    <p className='rating-count text-slate-400'>{movie.rating_count.low} ratings</p>
+                    <p className='rating-count text-slate-400'>{movie.rating_count} ratings</p>
             </div>
             <div className="backdrop-gradient"></div>
             <img src={movie.backdrop_path} alt="Backdrop" className="backdrop" />
@@ -68,7 +68,7 @@ export default function MovieDetailsPage({ params }) {
                 <img src={movie.poster_path} alt="Poster" className=''/>
             </div>
             <div className='info-container'>
-                <p><span>{movie.runtime.low} mins</span></p>
+                <p><span>{movie.runtime} mins</span></p>
                 <p>{movie.genres.map((el, index) => (
                     <span key={index}>
                         {el.name}

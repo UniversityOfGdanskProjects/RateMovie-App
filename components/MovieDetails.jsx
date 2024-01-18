@@ -16,9 +16,9 @@ export default function MovieDetails({ movie }) {
           <p>
             ORIGINAL LANGUAGE <span>{movie.original_language}</span>
           </p>
-          {movie.budget.low !== 0 && (
+          {movie.budget !== 0 && (
             <p>
-              BUDGET <span>{movie.budget.low} $</span>
+              BUDGET <span>{movie.budget} $</span>
             </p>
           )}
         </div>

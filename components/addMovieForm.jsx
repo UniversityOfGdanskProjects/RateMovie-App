@@ -1,38 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Formik, Field, Form, FieldArray, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 
-const EditMovieForm = ({ movieId, user }) => {
-    const [movie, setMovie] = useState(null);
+
+const AddMovieForm = ({ user }) => {
     const [errorMessage, setErrorMessage] = useState('');
-
-    useEffect(() => {
-        const fetchMovieDetails = async () => {
-            try {
-                const response = await fetch(`http://localhost:7000/api/movie/${movieId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                });
-
-                if (!response.ok) {
-                    const data = await response.json();
-                    setErrorMessage(data.error || 'Failed to fetch movie details');
-                }
-
-                const data = await response.json();
-                setMovie(data);
-            } catch (error) {
-                console.error('Error fetching movie details:', error);
-                setErrorMessage(error.message || 'Internal Server Error');
-            }
-        };
-
-        if (movieId) {
-            fetchMovieDetails();
-        }
-    }, [movieId]);
 
     const renderDoubleFieldArray = (name, values) => {
         return (
@@ -40,6 +12,7 @@ const EditMovieForm = ({ movieId, user }) => {
                 name={name}
                 render={arrayHelpers => (
                     <div>
+                        <label htmlFor={`${name}.id`}>{name}:</label>
                         {values[name] && values[name].length > 0 ? (
                             values[name].map((item, index) => (
                                 <div key={index} className='p-3 border-solid border-2 border-slate-900 rounded-lg my-1'>
@@ -122,86 +95,80 @@ const EditMovieForm = ({ movieId, user }) => {
 
     return (
         <div>
-            {movieId}
             {errorMessage && <p className='msg'>{errorMessage}</p>}
-            {movie ? (
-                <Formik
-                    initialValues={{
-                        runtime: movie?.runtime || 0,
-                        budget: movie?.budget || 0,
-                        tagline: movie?.tagline || '',
-                        poster_path: movie?.poster_path || '',
-                        release_date: movie?.release_date || '',
-                        overview: movie?.overview || '',
-                        original_language: movie?.original_language || '',
-                        original_title: movie?.original_title || '',
-                        title: movie?.title || '',
-                        backdrop_path: movie?.backdrop_path || '',
-                        images: movie?.images || [],
-                        trailers: movie?.trailers || [],
-                        genres: movie?.genres?.map(el => el.id) || [],
-                        actors: movie?.actors?.map(el => ({ id: el.id, character: el.character})) || [],
-                        directors: movie?.directors?.map(el => el.id) || [],
+            <Formik
+                initialValues={{
+                    runtime: 0,
+                    budget: 0,
+                    tagline: '',
+                    poster_path: '',
+                    release_date: '',
+                    overview: '',
+                    original_language: '',
+                    original_title: '',
+                    title: '',
+                    backdrop_path: '',
+                    images: [],
+                    trailers: [],
+                    genres: [],
+                    actors: [],
+                    directors: [],
+                }}
+                validationSchema={Yup.object({
+                    runtime: Yup.number().typeError('Runtime must be a number').positive('Runtime must be a positive number').required("required"),
+                    budget: Yup.number().typeError('Budget must be a number').positive('Budget must be a positive number').required("required"),
+                    tagline: Yup.string().required("required"),
+                    poster_path: Yup.string().url('Invalid URL format for Poster Path').required("required"),
+                    release_date: Yup.date().required("required"),
+                    overview: Yup.string().required("required"),
+                    original_language: Yup.string().required("required"),
+                    original_title: Yup.string().required("required"),
+                    title: Yup.string().required("required"),
+                    backdrop_path: Yup.string().url('Invalid URL format for Backdrop Path').required("required"),
+                    images: Yup.array().of(Yup.string().required("required").url("Invalid URL format for Images")).min(1, "At least one image is required"),
+                    trailers: Yup.array().of(Yup.string().required("required")).min(1, "At least one director is required"),
+                    genres: Yup.array().of(Yup.string().required("required")).min(1, "At least one genre is required"),
+                    actors: Yup.array().of(
+                        Yup.object().shape({
+                            id: Yup.string().required("required"),
+                            character: Yup.string().required("required"),
+                        })
+                        ).min(1, "At least one actor is required"),
+                    directors: Yup.array().of(Yup.string().required("required")).min(1, "At least one director is required"),
+                })}
+                onSubmit={async (values) => {
+                    try {
+                        console.log("___________________________", values)
+                        console.log(user.token)
+                        const response = await fetch('http://localhost:7000/api/admin/addMovie', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${user.token}`,
+                            },
+                            body: JSON.stringify(values),
+                        });
 
-                    }}
-                    validationSchema={Yup.object({
-                        runtime: Yup.number().typeError('Runtime must be a number').positive('Runtime must be a positive number').required("required"),
-                        budget: Yup.number().typeError('Budget must be a number').positive('Budget must be a positive number').required("required"),
-                        tagline: Yup.string().required("required"),
-                        poster_path: Yup.string().url('Invalid URL format for Poster Path').required("required"),
-                        release_date: Yup.string().required("required"),
-                        overview: Yup.string().required("required"),
-                        original_language: Yup.string().required("required"),
-                        original_title: Yup.string().required("required"),
-                        title: Yup.string().required("required"),
-                        backdrop_path: Yup.string().url('Invalid URL format for Backdrop Path').required("required"),
-                        images: Yup.array().of(Yup.string().required("required").url("Invalid URL format for Images")),
-                        trailers: Yup.array().of(Yup.string().required("required")),
-                        genres: Yup.array().of(Yup.string().required("required")),
-                        actors: Yup.array().of(
-                            Yup.object().shape({
-                                id: Yup.string().required("required"),
-                                character: Yup.string().required("required"),
-                            })
-                            ),
-                        directors: Yup.array().of(Yup.string().required("required")),
-                    })}
-                    onSubmit={async (values) => {
-                        try {
-                            console.log(values)
-                            const response = await fetch(`http://localhost:7000/api/admin/editMovie?id=${movieId}`, {
-                                method: 'PATCH',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'Authorization': `Bearer ${user.token}`,
-                                },
-                                body: JSON.stringify(values),
-                            });
+                        console.log(response)
 
-                            console.log(response)
-
-                            if (!response.ok) {
-                                const data = await response.json();
-                                setErrorMessage(data.error || 'Failed to edit movie');
-                                return
-                            }
-
-                            setErrorMessage("updated")
-
-                        } catch (error) {
-                            console.error('Error editing movie:', error);
-                            setErrorMessage(error.message || 'Internal Server Error');
+                        if (!response.ok) {
+                            const data = await response.json();
+                            setErrorMessage(data.error || 'Failed to add movie');
+                            return
                         }
-                    }}
-                >{({ values }) => (
-                    <Form className='form'>
+
+                        setErrorMessage("Movie added successfully");
+
+                    } catch (error) {
+                        console.error('Error adding movie:', error);
+                        setErrorMessage(error.message || 'Internal Server Error');
+                    }
+                }}
+            >{({ values }) => (
+                <Form className='form'>
                         <label>Title:</label>
                         <Field type="text" id="title" name="title" />
                         <ErrorMessage name="title" component="div" />
-
-                        <label>Images:</label>
-                        <Field type="text" id="images" name="images[0]" />
-                        <ErrorMessage name="images" component="div" />
 
                         <label htmlFor="overview">Overview:</label>
                         <Field as="textarea" id="overview" name="overview" rows={6} />
@@ -224,7 +191,7 @@ const EditMovieForm = ({ movieId, user }) => {
                         <ErrorMessage name="poster_path" component="div" />
 
                         <label htmlFor="release_date">Release Date:</label>
-                        <Field type="text" id="release_date" name="release_date" />
+                        <Field type="date" id="release_date" name="release_date" />
                         <ErrorMessage name="release_date" component="div" />
 
                         <label htmlFor="original_language">Original Language:</label>
@@ -307,21 +274,16 @@ const EditMovieForm = ({ movieId, user }) => {
                                 </div>
                             )}
                         />
-                            {renderFieldArray("genres", values)}
-                            {renderFieldArray("directors",values)}
-                            {renderDoubleFieldArray("actors", values)}
+                    {renderFieldArray("genres", values)}
+                    {renderFieldArray("directors",values)}
+                    {renderDoubleFieldArray("actors", values)}
 
-                        <button type="submit" className='big-btn'>Save Changes</button>
-                    </Form>
-
-                )}  
-                    
-                </Formik>
-            ) : (
-                <p>Loading movie details...</p>
+                    <button type="submit" onClick={() => console.log("ciekawe")} className='big-btn'>Add Movie</button>
+                </Form>
             )}
+            </Formik>
         </div>
     );
 }
 
-export default EditMovieForm;
+export default AddMovieForm;
