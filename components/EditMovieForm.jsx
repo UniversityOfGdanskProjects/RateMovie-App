@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Formik, Field, Form, FieldArray, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import DeleteButton from './DeleteButton';
 import { UserContext } from '@/context/userContextProvider';
 
 const EditMovieForm = ({ movieId }) => {
@@ -10,7 +9,6 @@ const EditMovieForm = ({ movieId }) => {
     const {user} = useContext(UserContext)
 
     useEffect(() => {
-        console.log(user)
         const fetchMovieDetails = async () => {
             try {
                 const response = await fetch(`http://localhost:7000/api/movie/${movieId}`, {
@@ -46,7 +44,7 @@ const EditMovieForm = ({ movieId }) => {
                     <div>
                         {values[name] && values[name].length > 0 ? (
                             values[name].map((item, index) => (
-                                <div key={index} className='p-3 border-solid border-2 border-slate-900 rounded-lg my-1'>
+                                <div key={index} className='form w-full border-slate-800 border-solid border-2 my-2'>
                                     <label htmlFor={`${name}.${index}.id`}>ID:</label>
                                     <Field
                                         type="text"
@@ -65,7 +63,7 @@ const EditMovieForm = ({ movieId }) => {
 
                                     <button
                                         type="button"
-                                        className="bg-slate-900"
+                                        className="small-btn"
                                         onClick={() => arrayHelpers.remove(index)}
                                     >
                                         Remove {name.slice(0,-1)}
@@ -94,7 +92,7 @@ const EditMovieForm = ({ movieId }) => {
                     <div>
                         {values[name] && values[name].length > 0 ? (
                             values[name].map((idEl, index) => (
-                                <div key={index}>
+                                <div className="form w-full" key={index}>
                                     <Field
                                         type="text"
                                         id={`${name}.${index}`}
@@ -103,7 +101,7 @@ const EditMovieForm = ({ movieId }) => {
                                     <ErrorMessage name={`${name}.${index}`} component="div" />
                                     <button
                                         type="button"
-                                        className="bg-slate-900"
+                                        className="small-btn"
                                         onClick={() => arrayHelpers.remove(index)}
                                     >
                                         Remove {name.slice(0,-1)}
@@ -124,11 +122,37 @@ const EditMovieForm = ({ movieId }) => {
         );
     };
 
+    const handleDeleteMovie = async () => {
+        try {
+            setErrorMessage("Deleting movie...");
+            const deleteResponse = await fetch(`http://localhost:7000/api/admin/deleteMovie`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user.token}`,
+                },
+                body: JSON.stringify({ movieId: String(movieId) }),
+            });
+
+            if (!deleteResponse.ok) {
+                const data = await deleteResponse.json();
+                setErrorMessage(data.error || 'Failed to delete movie');
+                return;
+            }
+
+            setErrorMessage("Movie deleted successfully");
+        } catch (error) {
+            console.error('Error deleting movie:', error);
+            setErrorMessage(error.message || 'Internal Server Error');
+        }
+    };
+
     return (
         <div>
-            {movieId}
+            <h2 className='msg'>Movie ID: {movieId}</h2>
             {errorMessage && <p className='msg'>{errorMessage}</p>}
             {movie ? (
+                <>
                 <Formik
                     initialValues={{
                         runtime: movie?.runtime || 0,
@@ -173,7 +197,7 @@ const EditMovieForm = ({ movieId }) => {
                     onSubmit={async (values) => {
                         try {
                             setErrorMessage("submiting...")
-                            console.log(values)
+                            console.log('z edita')
                             const response = await fetch(`http://localhost:7000/api/admin/editMovie?id=${movieId}`, {
                                 method: 'PATCH',
                                 headers: {
@@ -203,10 +227,6 @@ const EditMovieForm = ({ movieId }) => {
                         <label>Title:</label>
                         <Field type="text" id="title" name="title" />
                         <ErrorMessage name="title" component="div" />
-
-                        <label>Images:</label>
-                        <Field type="text" id="images" name="images[0]" />
-                        <ErrorMessage name="images" component="div" />
 
                         <label htmlFor="overview">Overview:</label>
                         <Field as="textarea" id="overview" name="overview" rows={6} />
@@ -252,7 +272,7 @@ const EditMovieForm = ({ movieId }) => {
                                     {values.images && values.images.length > 0 ? (
                                         
                                         values.images.map((image, index) => (
-                                            <div key={index}>
+                                            <div className="form w-full" key={index}>
                                                 <Field
                                                     type="text"
                                                     id={`images.${index}`}
@@ -261,7 +281,7 @@ const EditMovieForm = ({ movieId }) => {
                                                 <ErrorMessage name={`images.${index}`} component="div" />
                                                 <button
                                                     type="button"
-                                                    className="bg-slate-900"
+                                                    className="small-btn"
                                                     onClick={() => arrayHelpers.remove(index)}
                                                 >
                                                     Remove Image
@@ -286,7 +306,7 @@ const EditMovieForm = ({ movieId }) => {
                                 <div>
                                     {values.trailers && values.trailers.length > 0 ? (
                                         values.trailers.map((trailer, index) => (
-                                            <div key={index}>
+                                            <div className="form w-full" key={index}>
                                                 <Field
                                                     type="text"
                                                     id={`trailers.${index}`}
@@ -295,7 +315,7 @@ const EditMovieForm = ({ movieId }) => {
                                                 <ErrorMessage name={`trailers.${index}`} component="div" />
                                                 <button
                                                     type="button"
-                                                    className="bg-slate-900"
+                                                    className="small-btn"
                                                     onClick={() => arrayHelpers.remove(index)}
                                                 >
                                                     Remove Trailer
@@ -316,18 +336,27 @@ const EditMovieForm = ({ movieId }) => {
                             {renderFieldArray("genres", values)}
                             {renderFieldArray("directors",values)}
                             {renderDoubleFieldArray("actors", values)}
-
                         <button type="submit" onClick={() => console.log(values)}className='big-btn'>Save Changes</button>
-                        <DeleteButton movieId={movieId} />
-                        
+                        {movie && (
+                            <>
+                                <button
+                                    type="button"
+                                    className='big-btn'
+                                    onClick={() => handleDeleteMovie()}
+                                >
+                                    Delete
+                                </button>
+                                {errorMessage && <p className='msg'>{errorMessage}</p>}
+                            </>
+                        )}
                     </Form>
-
                 )}  
-                    
                 </Formik>
+                </>
+                
             ) : (
                 <p>Loading movie details...</p>
-            )}
+            )} 
         </div>
     );
 }

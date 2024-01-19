@@ -20,7 +20,7 @@ export default function ProfileLayout({ children }) {
         { user && user.isAdmin &&
                 <>
                 <section>
-                <nav className='bg-slate-700 flex flex-wrap p-2 gap-2'>
+                <nav className='bg-slate-700 flex flex-wrap p-2 gap-2 justify-center'>
                 <Link href='/admin/manage-users'>
                     <button className='big-btn'>
                         Users
@@ -31,17 +31,11 @@ export default function ProfileLayout({ children }) {
                         Movies
                     </button>
                 </Link>
-                <Link href='/admin/manage-ratings'>
+                {/* <Link href='/admin/manage-ratings'>
                     <button className='big-btn'>
                         Ratings
                     </button>
-                </Link>
-                <Link href='/admin/manage-comments'>
-                    <button className='big-btn'>
-                        Comments
-                    </button>
-                </Link>
-                
+                </Link> */}
                 </nav>
             </section>
             {children}

@@ -143,7 +143,7 @@ export default function RateCard({ movieId }) {
             const isInIgnored = await fetch(`http://localhost:7000/api/ignored/${user.id}/${movieId}`)
             const isInFollowed = await fetch(`http://localhost:7000/api/followed/${user.id}/${movieId}`)
             const isInWatchtlist = await fetch(`http://localhost:7000/api/watchlist/${user.id}/${movieId}`)
-            if (isInFav.ok) setInFavourties(true)
+            if (isInFav.ok) setInFavourties(true) 
             if (isInIgnored.ok) setInIgnored(true)
             if (isInFollowed.ok) setInFollowed(true)
             if (isInWatchtlist.ok) setInWatchlist(true)
@@ -159,7 +159,7 @@ export default function RateCard({ movieId }) {
               } 
           }
         } catch (error) {
-          // console.error('Error fetching review:', error);
+          console.error('Error fetching review:', error);
         }
       };
     

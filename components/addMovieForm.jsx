@@ -15,10 +15,9 @@ const AddMovieForm = () => {
                 name={name}
                 render={arrayHelpers => (
                     <div>
-                        <label htmlFor={`${name}.id`}>{name}:</label>
                         {values[name] && values[name].length > 0 ? (
                             values[name].map((item, index) => (
-                                <div key={index} className='p-3 border-solid border-2 border-slate-900 rounded-lg my-1'>
+                                <div key={index} className='form w-full border-slate-800 border-solid border-2 my-2'>
                                     <label htmlFor={`${name}.${index}.id`}>ID:</label>
                                     <Field
                                         type="text"
@@ -37,7 +36,7 @@ const AddMovieForm = () => {
 
                                     <button
                                         type="button"
-                                        className="bg-slate-900"
+                                        className="small-btn"
                                         onClick={() => arrayHelpers.remove(index)}
                                     >
                                         Remove {name.slice(0,-1)}
@@ -66,7 +65,7 @@ const AddMovieForm = () => {
                     <div>
                         {values[name] && values[name].length > 0 ? (
                             values[name].map((idEl, index) => (
-                                <div key={index}>
+                                <div className="form w-full" key={index}>
                                     <Field
                                         type="text"
                                         id={`${name}.${index}`}
@@ -75,7 +74,7 @@ const AddMovieForm = () => {
                                     <ErrorMessage name={`${name}.${index}`} component="div" />
                                     <button
                                         type="button"
-                                        className="bg-slate-900"
+                                        className="small-btn"
                                         onClick={() => arrayHelpers.remove(index)}
                                     >
                                         Remove {name.slice(0,-1)}
@@ -216,7 +215,7 @@ const AddMovieForm = () => {
                                 <div>
                                     {values.images && values.images.length > 0 ? (
                                         values.images.map((image, index) => (
-                                            <div key={index}>
+                                            <div className="form w-full" key={index}>
                                                 <Field
                                                     type="text"
                                                     id={`images.${index}`}
@@ -225,7 +224,7 @@ const AddMovieForm = () => {
                                                 <ErrorMessage name={`images.${index}`} component="div" />
                                                 <button
                                                     type="button"
-                                                    className="bg-slate-900"
+                                                    className="small-btn"
                                                     onClick={() => arrayHelpers.remove(index)}
                                                 >
                                                     Remove Image
@@ -250,7 +249,7 @@ const AddMovieForm = () => {
                                 <div>
                                     {values.trailers && values.trailers.length > 0 ? (
                                         values.trailers.map((trailer, index) => (
-                                            <div key={index}>
+                                            <div className="form w-full" key={index}>
                                                 <Field
                                                     type="text"
                                                     id={`trailers.${index}`}
@@ -259,7 +258,7 @@ const AddMovieForm = () => {
                                                 <ErrorMessage name={`trailers.${index}`} component="div" />
                                                 <button
                                                     type="button"
-                                                    className="bg-slate-900"
+                                                    className="small-btn"
                                                     onClick={() => arrayHelpers.remove(index)}
                                                 >
                                                     Remove Trailer
@@ -277,12 +276,14 @@ const AddMovieForm = () => {
                                 </div>
                             )}
                         />
+                    <label htmlFor="genres">Genres:</label>
                     {renderFieldArray("genres", values)}
+                    <label htmlFor="directors">Directors:</label>
                     {renderFieldArray("directors",values)}
+                    <label htmlFor="actors">Actors:</label>
                     {renderDoubleFieldArray("actors", values)}
 
                     <button type="submit" onClick={() => console.log("ciekawe")} className='big-btn'>Add Movie</button>
-                    <button>Delete</button>
                 </Form>
             )}
             </Formik>

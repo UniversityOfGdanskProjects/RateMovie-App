@@ -5,19 +5,47 @@ import * as Yup from 'yup';
 import EditMovieForm from '@/components/EditMovieForm';
 import { UserContext } from '@/context/userContextProvider';
 
-
 export default function EditDeleteMovie() {
-    const {user} = useContext(UserContext)
-    // const user = {
-    // id: "0bb25f62-8e4d-4e39-977e-bfccbb6929bd",
-    // isAdmin: true,
-    // token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwYmIyNWY2Mi04ZTRkLTRlMzktOTc3ZS1iZmNjYmI2OTI5YmQiLCJpc0FkbWluIjp0cnVlLCJpYXQiOjE3MDU1MzM1MDcsImV4cCI6MTcwNTUzNzEwN30.SPZTXxSJVLrTv2RxtMQB3ZqBMY7Rv-fJCnClA_gShw4",
-    // username: "AgataAdmin"}
-    const movieId = 955916
+    const { user } = useContext(UserContext);
+    const [searchMovieId, setSearchMovieId] = useState('');
+    const [movieId, setMovieId] = useState(null);
+
+    const searchFormik = useFormik({
+        initialValues: {
+            searchMovieId: '',
+        },
+        validationSchema: Yup.object({
+            searchMovieId: Yup.string().required('Required'),
+        }),
+        onSubmit: (values) => {
+            setMovieId(values.searchMovieId);
+        },
+    });
+
     return (
-        <section>
-          <h1 className='msg'>Edit Movie</h1>
-            <EditMovieForm movieId={movieId} user={user}/>
+        <section className='pb-3'>
+            <h1 className='msg'>Edit Movie</h1>
+
+            <form className="form" onSubmit={searchFormik.handleSubmit}>
+                <label htmlFor="searchMovieId">Search Movie by ID:</label>
+                <input
+                    type="text"
+                    id="searchMovieId"
+                    name="searchMovieId"
+                    onChange={searchFormik.handleChange}
+                    onBlur={searchFormik.handleBlur}
+                    value={searchFormik.values.searchMovieId}
+                />
+                <div className='buttons'>
+                  <button className="small-btn" type="submit">Search</button>
+                </div>
+                {searchFormik.touched.searchMovieId && searchFormik.errors.searchMovieId && (
+                    <div>{searchFormik.errors.searchMovieId}</div>
+                )}
+            </form>
+            {movieId && (
+                <EditMovieForm movieId={movieId} user={user} />
+            )}
         </section>
-      );
+    );
 }

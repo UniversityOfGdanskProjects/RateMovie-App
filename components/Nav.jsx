@@ -10,7 +10,7 @@ export default function Nav() {
   const { user, setUser } = useContext(UserContext)
 
   return (
-    <nav className='flex bg-slate-800 justify-between py-2 px-2 shadow-2xl'>
+    <nav className='flex justify-between py-2 px-2 shadow-2xl'>
       <Link href='/' className='flex gap-2 flex-center items-center'>
         <Image
           src='/assets/images/logo.svg'

@@ -6,6 +6,7 @@ import MovieDetails from '@/components/MovieDetails';
 import MovieGallery from '@/components/MovieGallery';
 import MovieTrailer from '@/components/MovieTrailer';
 import LoadingPage from '@/components/LoadingPage';
+import MovieComments from '@/components/MovieComments';
 
 export default function MovieDetailsPage({ params }) {
   const { id } = params;
@@ -85,6 +86,7 @@ export default function MovieDetailsPage({ params }) {
             <MovieTrailer movie={movie}/>
             <MovieGallery movie={movie}/>
           </div>
+          <MovieComments movieId={id}/>
 
         </section>
       ) : <LoadingPage/>}
