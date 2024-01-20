@@ -2,12 +2,12 @@ import bcrypt from 'bcrypt';
 import driver from '../../db/neo4jDriver.js';
 import { v4 as uuidv4 } from 'uuid';
 
-import { isValidEmail, isValidUsername, isValidPassword } from '../../helpers/validation.js';
+import { isValidEmail, isValidUsername, isValidPassword, isValidateCommentReview } from '../../helpers/validation.js';
 import { authenticateAdmin, generateToken } from '../../middleware/auth.js';
 import { checkNodeExistence } from '../../helpers/checkExistence.js';
 import { removeMovieFromAction, addMovieToAction } from '../../helpers/movieHelpers.js';
 import { registerUser } from './usersController.js';
-import { commentMovie, rateMovie } from './moviesController.js';
+import { commentMovie, rateMovie } from './userDataController.js';
 import { config } from 'dotenv';
 
 config();
@@ -105,7 +105,6 @@ export const loginAdmin = async (req, res) => {
 
 export const getUserById = async (req,res) => {
     const { userId } = req.query
-    // console.log(userId)
     authenticateAdmin(req, res, async () => {
         const session = driver.session();
         
@@ -283,12 +282,12 @@ export const removeComment = async (req, res) => {
         try {
             const query = `
                 MATCH ()-[r:COMMENTED]->()
-                WHERE r.id = $commentId
+                WHERE r.commentId = $commentId
                 DELETE r
             `;
 
             await session.executeWrite(tx => tx.run(query, { commentId }));
-            return { message: 'Comment removed successfully' };
+            res.json({ message: 'Comment removed successfully' });
         } finally {
             await session.close();
         }
@@ -304,10 +303,11 @@ export const editComment = async (req, res) => {
                 res.status(400).json({ error: 'Invalid comment. Please provide a comment with a maximum length of 200 characters.' });
                 return;
             }
+            console.log("przed query")
 
             const query = `
-                MATCH ()-[c:COMMENTED]->()
-                WHERE c.id = $commentId
+                MATCH (u:User)-[c:COMMENTED]->(m: Movie)
+                WHERE c.commentId = $commentId
                 SET c.comment = $newComment
                 RETURN c
             `;
@@ -318,7 +318,7 @@ export const editComment = async (req, res) => {
             }));
 
             const updatedComment = result.records[0].get('c').properties;
-            return updatedComment;
+            res.json({updatedComment});
         } finally {
             await session.close();
         }
@@ -344,7 +344,7 @@ export const removeReview = async (req, res) => {
             `;
 
             await session.executeWrite(tx => tx.run(query, { reviewId }));
-            return { message: 'Review removed successfully' };
+            res.json({ message: 'Review removed successfully' });
         } finally {
             await session.close();
         }
@@ -376,7 +376,7 @@ export const editReview = async (req, res) => {
             }));
 
             const updatedReview = result.records[0].get('r').properties;
-            return updatedReview;
+            res.json({updatedReview});
         } finally {
             await session.close();
         }
@@ -385,6 +385,7 @@ export const editReview = async (req, res) => {
 
 export const addMovie = async (req, res) => {
     const session = driver.session();
+    // console.log(req.headers)
 
     await authenticateAdmin(req, res, async () => {
         try {
@@ -406,6 +407,7 @@ export const addMovie = async (req, res) => {
                 actors
             } = req.body;
 
+            console.log(directors)
 
             const movieQuery = `
                 CREATE (m:Movie {
@@ -461,7 +463,7 @@ export const addMovie = async (req, res) => {
                     MATCH (d:Person:Director)
                     MATCH (m:Movie)
                     WHERE d.id = $director AND m.id = $movieId
-                    CREATE (m)-[:DIRECTED]->(d)
+                    CREATE (m)<-[:DIRECTED]-(d)
                 `;
 
                 await session.executeWrite(tx => tx.run(directorQuery, { director, movieId: newId  }));
@@ -509,7 +511,7 @@ export const removeMovie = async (req, res) => {
             
             res.status(200).json({ message: 'Movie removed successfully' });
         } catch (error) {
-            console.error(error);
+            // console.error(error);
             res.status(500).json({ error: 'Internal Server Error' });
         } finally {
             await session.close();
@@ -595,7 +597,7 @@ export const editMovie = async (req, res) => {
             await session.executeWrite(tx => tx.run(deleteGenresQuery, { id }));
 
             for (const genreId of genres) {
-                console.log(typeof genreId, genreId)
+                // console.log(typeof genreId, genreId)
                 const addGenreQuery = `
                     MATCH (m: Movie)
                     MATCH (g:Genre)
@@ -614,7 +616,7 @@ export const editMovie = async (req, res) => {
             `;
 
             await session.executeWrite(tx => tx.run(deleteDirectorsQuery, { id }));
-                console.log(directors)
+                // console.log(directors)
             for (const director of directors) {
 
                 const addDirectorQuery = `
@@ -629,7 +631,7 @@ export const editMovie = async (req, res) => {
             }
 
             if (actors) {
-                console.log(actors)
+                // console.log(actors)
                 const deleteActorsQuery = `
                     MATCH (m:Movie {id: $id})<-[r:ACTED_IN]->()
                     DELETE r

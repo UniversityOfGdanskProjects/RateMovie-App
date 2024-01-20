@@ -46,7 +46,7 @@ adminRoutes.route('/api/admin/removeMovieFromIgnored').delete(removeMovieFromIgn
 adminRoutes.route('/api/admin/removeMovieFromWatchlist').delete(removeMovieFromWatchlist);
 adminRoutes.route('/api/admin/removeMovieFromFollowed').delete(removeMovieFromFollowed);
 
-adminRoutes.route('/api/admin/addComment').post(addComment);
+adminRoutes.route('/api/admin/:movieId/addComment').post(addComment);
 adminRoutes.route('/api/admin/removeComment').delete(removeComment);
 adminRoutes.route('/api/admin/editComment').patch(editComment);
 

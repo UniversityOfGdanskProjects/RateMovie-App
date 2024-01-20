@@ -42,6 +42,7 @@ export const addMovieToAction = async (req, res, actionType) => {
 export const getMoviesByRelation = async (req, res, relationType) => {
     const { userId } = req.params;
     const session = driver.session();
+    console.log("jejkfdahs")
 
     try {
         const userExists = await checkNodeExistence(session, 'User', 'userId', userId);
@@ -56,6 +57,7 @@ export const getMoviesByRelation = async (req, res, relationType) => {
         `;
 
         const result = await session.run(query, { userId });
+        console.log(result)
         const data = result.records.map(record => {
             const movie = record.get('m').properties;
             const relationsContent = record.get('relationContent')[0].properties
@@ -109,7 +111,6 @@ export const removeMovieFromAction = async (req, res, actionType) => {
 
 export const getRelationByMovieAndUser = async (req, res, relationType) => {
     const { userId, movieId } = req.params;
-    console.log(userId, movieId)
     const session = driver.session();
   
     try {
@@ -117,7 +118,6 @@ export const getRelationByMovieAndUser = async (req, res, relationType) => {
         MATCH (u: User {userId: $userId})-[r:${relationType}]->(m: Movie {id: $movieId})
         RETURN r
       `;
-      console.log(query)
   
       const result = await session.run(query, { userId, movieId });
   
