@@ -97,7 +97,6 @@ export const usersRanking = async (req, res) => {
             MATCH (u:User)-[r:REVIEWED|:COMMENTED]-(m:Movie)
             RETURN u, COUNT(r) as activity
             ORDER BY activity DESC
-            LIMIT 20
         `));
 
         const data = result.records.map(record => {

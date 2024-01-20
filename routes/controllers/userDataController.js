@@ -1,9 +1,18 @@
 import { getMoviesByRelation, getRelationByMovieAndUser } from '../../helpers/movieHelpers.js';
 import driver from "../../db/neo4jDriver.js";
 import { addMovieToAction, removeMovieFromAction } from '../../helpers/movieHelpers.js';
-import { isValidEmail, isValidPassword, isValidRating, isValidUsername, isValidateCommentReview } from '../../helpers/validation.js';
-import { checkNodeExistence, checkRelationshipExistence } from '../../helpers/checkExistence.js';
+import { isValidRating, isValidateCommentReview } from '../../helpers/validation.js';
+import { checkNodeExistence } from '../../helpers/checkExistence.js';
 import { v4 as uuidv4 } from 'uuid';
+import mqtt from 'mqtt';
+import { config } from 'dotenv';
+
+config()
+
+const { MQTT_ADDRESS } = process.env
+const rankingUpdateTopic = 'ranking/update';
+const mqttClient = mqtt.connect(MQTT_ADDRESS);
+
 
 export const getFavouriteMovies = async (req, res) => {
     await getMoviesByRelation(req, res, 'FAVOURITES');
@@ -112,14 +121,14 @@ export const rateMovie = async (req, res) => {
 
     const successMessage = created ? 'Review added successfully' : 'Review updated successfully';
     const watchlistMessage = isInWatchlist ? 'Movie removed from watchlist.' : '';
-
+    
+    mqttClient.publish(rankingUpdateTopic, 'Ranking has been updated');
     res.status(created ? 201 : 200).json({
         message: `${successMessage} ${watchlistMessage}`,
         review: newReview
     });
 
     } catch (error) {
-        console.error(error);
         res.status(500).json({ error: 'Internal Server Error' });
     } finally {
         await session.close();
@@ -128,7 +137,6 @@ export const rateMovie = async (req, res) => {
 
 export const commentMovie = async (req, res) => {
     const movieId = req.params.movieId;
-    console.log(req.params)
     const { userId, comment } = req.body;
 
     const session = driver.session();
@@ -216,6 +224,7 @@ export const removeMovieFromCommented = async (req, res) => {
 
 export const removeMovieFromReviewed = async (req, res) => {
     await removeMovieFromAction(req, res, 'REVIEWED')
+    mqttClient.publish(rankingUpdateTopic, 'Ranking has been updated');
 }
 
 export const addMovieToFavourites = async (req, res) => {
