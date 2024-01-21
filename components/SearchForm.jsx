@@ -1,16 +1,17 @@
-'use client'
-import React from 'react';
-
+"use client";
+import React from "react";
 
 const SearchForm = ({ searchQuery, setSearchQuery, genres, handleSearch }) => {
   return (
-    <div className='form'>
+    <div className="form">
       <label>
         Title:
         <input
           type="text"
           value={searchQuery.title}
-          onChange={(e) => setSearchQuery({ ...searchQuery, title: e.target.value })}
+          onChange={(e) =>
+            setSearchQuery({ ...searchQuery, title: e.target.value })
+          }
         />
       </label>
       <label>
@@ -18,14 +19,18 @@ const SearchForm = ({ searchQuery, setSearchQuery, genres, handleSearch }) => {
         <input
           type="text"
           value={searchQuery.name}
-          onChange={(e) => setSearchQuery({ ...searchQuery, name: e.target.value })}
+          onChange={(e) =>
+            setSearchQuery({ ...searchQuery, name: e.target.value })
+          }
         />
       </label>
       <label>
         Genre:
         <select
           value={searchQuery.genre}
-          onChange={(e) => setSearchQuery({ ...searchQuery, genre: e.target.value })}
+          onChange={(e) =>
+            setSearchQuery({ ...searchQuery, genre: e.target.value })
+          }
         >
           <option value="">All Genres</option>
           {genres.map((genre) => (
@@ -39,7 +44,9 @@ const SearchForm = ({ searchQuery, setSearchQuery, genres, handleSearch }) => {
         Rating:
         <select
           value={searchQuery.rating}
-          onChange={(e) => setSearchQuery({ ...searchQuery, rating: e.target.value })}
+          onChange={(e) =>
+            setSearchQuery({ ...searchQuery, rating: e.target.value })
+          }
         >
           <option value="">All Ratings</option>
           <option value="0">0-1</option>
@@ -54,14 +61,18 @@ const SearchForm = ({ searchQuery, setSearchQuery, genres, handleSearch }) => {
         <input
           type="text"
           value={searchQuery.year}
-          onChange={(e) => setSearchQuery({ ...searchQuery, year: e.target.value })}
+          onChange={(e) =>
+            setSearchQuery({ ...searchQuery, year: e.target.value })
+          }
         />
       </label>
       <label>
         Sort By:
         <select
           value={searchQuery.sortBy}
-          onChange={(e) => setSearchQuery({ ...searchQuery, sortBy: e.target.value })}
+          onChange={(e) =>
+            setSearchQuery({ ...searchQuery, sortBy: e.target.value })
+          }
         >
           <option value="">Select</option>
           <option value="title">Title</option>
@@ -76,15 +87,19 @@ const SearchForm = ({ searchQuery, setSearchQuery, genres, handleSearch }) => {
         Sort Order:
         <select
           value={searchQuery.sortOrder}
-          onChange={(e) => setSearchQuery({ ...searchQuery, sortOrder: e.target.value })}
+          onChange={(e) =>
+            setSearchQuery({ ...searchQuery, sortOrder: e.target.value })
+          }
         >
           <option value="asc">Ascending</option>
           <option value="desc">Descending</option>
           <option value="">None</option>
         </select>
       </label>
-      <div className='buttons'>
-        <button className="big-btn" onClick={handleSearch}>Search</button>
+      <div className="buttons">
+        <button className="big-btn" onClick={handleSearch}>
+          Search
+        </button>
       </div>
     </div>
   );

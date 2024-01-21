@@ -1,60 +1,62 @@
-'use client'
+"use client";
 
-import Image from 'next/image'
-import Link from 'next/link'
-import MovieList from '@/components/MovieList'
-import { UserContext } from '@/context/userContextProvider'
-import { useState, useEffect, useContext } from 'react'
-import { config } from 'dotenv'
-config()
-
+import Image from "next/image";
+import Link from "next/link";
+import MovieList from "@/components/MovieList";
+import { UserContext } from "@/context/userContextProvider";
+import { useState, useEffect, useContext } from "react";
+import { config } from "dotenv";
+config();
 
 export default function App() {
-  const {user} = useContext(UserContext)
-  const [ movies, setMovies ] = useState([])
-  const [error, setError] = useState('')
+  const { user } = useContext(UserContext);
+  const [movies, setMovies] = useState([]);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchPopularMovies = async () => {
       try {
-        const userIdQuery = user ? `?userId=${user.id}` : '';
-        const response = await fetch(`http://localhost:7000/api/movies/popular${userIdQuery}`);
-        const data = await response.json()
+        const userIdQuery = user ? `?userId=${user.id}` : "";
+        const response = await fetch(
+          `http://localhost:7000/api/movies/popular${userIdQuery}`
+        );
+        const data = await response.json();
         if (response.ok) {
-          setError('')
-          setMovies(data)
+          setError("");
+          setMovies(data);
         } else {
-          setError('error fetching popular movies')
+          setError("error fetching popular movies");
         }
       } catch (error) {
-        setError(`error fetching popular movies: ${error}`)
+        setError(`error fetching popular movies: ${error}`);
       }
-    }
+    };
 
-    fetchPopularMovies()
-  }, [user])
+    fetchPopularMovies();
+  }, [user]);
   return (
-    <main className="">
-      <section className=''>
-          <div className="backdrop-container mb-12">
-            <div className='backdrop-info flex flex-col items-center'>
-              <h1 className='text-center text-4xl mb-4'>
-              Your movies, your ratings, your community. Immerse yourself in the world of cinema with us!
-              </h1>
-              { !user &&
-                <Link href='/register' className='my-2'>
-                  <button className='big-btn'>
-                    GET STARTED - IT'S FREE
-                  </button>
-                </Link>
-              }
-            </div>
-            <div className="backdrop-gradient"></div>
-            <img src='https://image.tmdb.org/t/p/original/8QXGNP0Vb4nsYKub59XpAhiUSQN.jpg' alt="Backdrop" className="backdrop opacity-75" />
-          </div>
+    <section className="">
+      <div className="backdrop-container mb-12">
+        <div className="backdrop-info flex flex-col items-center">
+          <h1 className="text-center text-4xl mb-4">
+            Your movies, your ratings, your community. Immerse yourself in the
+            world of cinema with us!
+          </h1>
+          {!user && (
+            <Link href="/register" className="my-2">
+              <button className="big-btn">GET STARTED - IT'S FREE</button>
+            </Link>
+          )}
+        </div>
+        <div className="backdrop-gradient"></div>
+        <img
+          src="https://image.tmdb.org/t/p/original/8QXGNP0Vb4nsYKub59XpAhiUSQN.jpg"
+          alt="Backdrop"
+          className="backdrop opacity-75"
+        />
+      </div>
 
-        <MovieList movies={movies} isPersonal={false}/>
-      </section>
-    </main>
-  )
+      <MovieList movies={movies} isPersonal={false} />
+    </section>
+  );
 }

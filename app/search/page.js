@@ -1,24 +1,21 @@
-'use client'
-import React, { useContext, useState, useEffect, useMemo } from 'react';
-import { UserContext } from '@/context/userContextProvider';
-import MovieList from '@/components/MovieList';
-import { useFormik } from 'formik';
-import * as Yup from 'yup';
-import LoadingPage from '@/components/LoadingPage';
-import SearchForm from '@/components/SearchForm';
-import DetailedMovieCard from '@/components/DetailedMovieCard';
+"use client";
+import React, { useContext, useState, useEffect, useMemo } from "react";
+import { UserContext } from "@/context/userContextProvider";
+import LoadingPage from "@/components/LoadingPage";
+import SearchForm from "@/components/SearchForm";
+import DetailedMovieCard from "@/components/DetailedMovieCard";
 
 export default function SearchPage() {
   const { user } = useContext(UserContext);
 
   const [searchQuery, setSearchQuery] = useState({
-    title: '',
-    name: '',
-    genre: '',
-    rating: '',
-    year: '',
-    sortBy: '',
-    sortOrder: '',
+    title: "",
+    name: "",
+    genre: "",
+    rating: "",
+    year: "",
+    sortBy: "",
+    sortOrder: "",
   });
   const [genres, setGenres] = useState([]);
   const [movies, setMovies] = useState([]);
@@ -28,11 +25,11 @@ export default function SearchPage() {
   useEffect(() => {
     const fetchGenres = async () => {
       try {
-        const response = await fetch('http://localhost:7000/api/genres');
+        const response = await fetch("http://localhost:7000/api/genres");
         const data = await response.json();
         setGenres(data);
       } catch (error) {
-        console.error('Error fetching genres:', error);
+        console.error("Error fetching genres:", error);
       }
     };
 
@@ -43,18 +40,20 @@ export default function SearchPage() {
     setIsLoading(true);
     try {
       const queryParams = new URLSearchParams({
-        ...searchQuery
+        ...searchQuery,
       });
-      if (user) queryParams.set("userId", user.id)
+      if (user) queryParams.set("userId", user.id);
 
-      const response = await fetch(`http://localhost:7000/api/movies/search?${queryParams}`);
+      const response = await fetch(
+        `http://localhost:7000/api/movies/search?${queryParams}`
+      );
       const data = await response.json();
 
       setMovies(data);
       setDisplayedMovies(10);
       setIsLoading(false);
     } catch (error) {
-      console.error('Error searching movies:', error);
+      console.error("Error searching movies:", error);
     }
   };
 
@@ -62,10 +61,13 @@ export default function SearchPage() {
     setDisplayedMovies((prevDisplayedMovies) => prevDisplayedMovies + 10);
   };
 
-  const displayedMoviesList = movies.slice(0, displayedMovies);
+  const displayedMoviesList = useMemo(
+    () => movies.slice(0, displayedMovies),
+    [movies, displayedMovies]
+  );
 
   return (
-    <section className='p-3'>
+    <section className="px-1 py-4">
       {genres && (
         <SearchForm
           searchQuery={searchQuery}
@@ -76,15 +78,16 @@ export default function SearchPage() {
       )}
       {!isLoading && movies ? (
         <>
-        <br></br>
-        <ul className='detailed-movie-list'>
-        {displayedMoviesList.map((movie, index) => (
-              <DetailedMovieCard key={index} movie={movie} place={null}/>
-            ))
-        }
-        </ul>
-        {displayedMovies < movies.length && (
-            <button className="big-btn m-auto mt-3" onClick={handleLoadMore}>Load More</button>
+          <br></br>
+          <ul className="detailed-movie-list">
+            {displayedMoviesList.map((movie, index) => (
+              <DetailedMovieCard key={index} movie={movie} place={null} />
+            ))}
+          </ul>
+          {displayedMovies < movies.length && (
+            <button className="big-btn m-auto mt-3" onClick={handleLoadMore}>
+              Load More
+            </button>
           )}
         </>
       ) : (
