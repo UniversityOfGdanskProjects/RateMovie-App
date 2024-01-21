@@ -6,36 +6,11 @@ import usersRoutes from './routes/usersRoutes.js';
 import userDataRoutes from './routes/userDataRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import rankingRoutes from './routes/rankingRoutes.js';
+import { config } from 'dotenv';
+config()
 
 const app = express();
 const port = 7000;
-
-const MQTT_ADDRESS = 'mqtt://localhost:1883';
-const mqttClient = mqtt.connect(MQTT_ADDRESS);
-
-mqttClient.on('connect', () => {
-  console.log('MQTT Client Connected');
-});
-
-mqttClient.on('error', (error) => {
-  console.error('MQTT Connection Error:', error);
-});
-
-
-mqttClient.on('connect', () => {
-  console.log('Connected to MQTT broker');
-  // Subskrybuj temat
-  mqttClient.subscribe('ranking/update');
-});
-
-mqttClient.on('message', (topic, message) => {
-  console.log(`Received message on topic ${topic}: ${message}`);
-});
-
-// Publikuj przykładową wiadomość co 5 sekund
-// setInterval(() => {
-//   mqttClient.publish('smart-home/devices', 'Temperature: 22°C');
-// }, 1000);
 
 app.use(express.json());
 app.use(cors());
