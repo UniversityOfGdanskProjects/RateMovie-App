@@ -36,6 +36,7 @@ export default function RateCard({ movieId }) {
               setMsg('problems')
               return;
           }
+          setDeleteButton(true)
           setMsg('added review')
           
       } catch (error) {
@@ -118,6 +119,7 @@ export default function RateCard({ movieId }) {
     
     if (response.ok) {
         setMsg("deleted review succesfuly");
+        setDeleteButton(false)
         formik.resetForm();
 
 
@@ -129,10 +131,7 @@ export default function RateCard({ movieId }) {
     } catch(error) {
 
     }
-
   }
-
-
 
     useEffect(() => {
       const fetchReview = async () => {

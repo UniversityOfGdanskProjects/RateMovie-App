@@ -37,6 +37,16 @@ export default function Nav() {
         </>
 
         }
+        <Link href='/ranking/movies'>
+          <button className="small-btn">
+            Movies Ranking
+          </button>
+        </Link>
+        <Link href='/ranking/users'>
+          <button className="small-btn">
+            Users Ranking
+          </button>
+        </Link>
         <Link href='/search'>
           <button className='big-btn py-1 px-3 flex flex-center items-center gap-2'>
             <p>Search</p><TbSearch />

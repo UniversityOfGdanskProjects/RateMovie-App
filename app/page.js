@@ -12,20 +12,22 @@ config()
 export default function App() {
   const {user} = useContext(UserContext)
   const [ movies, setMovies ] = useState([])
+  const [error, setError] = useState('')
 
   useEffect(() => {
     const fetchPopularMovies = async () => {
       try {
         const userIdQuery = user ? `?userId=${user.id}` : '';
         const response = await fetch(`http://localhost:7000/api/movies/popular${userIdQuery}`);
+        const data = await response.json()
         if (response.ok) {
-          const data = await response.json()
+          setError('')
           setMovies(data)
         } else {
-          console.error('Failed to fetch popular movies')
+          setError('error fetching popular movies')
         }
       } catch (error) {
-        console.error('Error fetching popular movies:', error)
+        setError(`error fetching popular movies: ${error}`)
       }
     }
 

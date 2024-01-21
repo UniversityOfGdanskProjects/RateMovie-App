@@ -83,7 +83,9 @@ const SearchForm = ({ searchQuery, setSearchQuery, genres, handleSearch }) => {
           <option value="">None</option>
         </select>
       </label>
-      <button className="big-btn" onClick={handleSearch}>Search</button>
+      <div className='buttons'>
+        <button className="big-btn" onClick={handleSearch}>Search</button>
+      </div>
     </div>
   );
 };

@@ -1,11 +1,12 @@
 'use client'
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect, useMemo } from 'react';
 import { UserContext } from '@/context/userContextProvider';
 import MovieList from '@/components/MovieList';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import LoadingPage from '@/components/LoadingPage';
 import SearchForm from '@/components/SearchForm';
+import DetailedMovieCard from '@/components/DetailedMovieCard';
 
 export default function SearchPage() {
   const { user } = useContext(UserContext);
@@ -50,7 +51,7 @@ export default function SearchPage() {
       const data = await response.json();
 
       setMovies(data);
-      setDisplayedMovies(30);
+      setDisplayedMovies(10);
       setIsLoading(false);
     } catch (error) {
       console.error('Error searching movies:', error);
@@ -58,7 +59,7 @@ export default function SearchPage() {
   };
 
   const handleLoadMore = () => {
-    setDisplayedMovies((prevDisplayedMovies) => prevDisplayedMovies + 30);
+    setDisplayedMovies((prevDisplayedMovies) => prevDisplayedMovies + 10);
   };
 
   const displayedMoviesList = movies.slice(0, displayedMovies);
@@ -74,9 +75,15 @@ export default function SearchPage() {
         />
       )}
       {!isLoading && movies ? (
-        <><br></br>
-          <MovieList movies={displayedMoviesList} />
-          {displayedMovies < movies.length && (
+        <>
+        <br></br>
+        <ul className='detailed-movie-list'>
+        {displayedMoviesList.map((movie, index) => (
+              <DetailedMovieCard key={index} movie={movie} place={null}/>
+            ))
+        }
+        </ul>
+        {displayedMovies < movies.length && (
             <button className="big-btn m-auto mt-3" onClick={handleLoadMore}>Load More</button>
           )}
         </>

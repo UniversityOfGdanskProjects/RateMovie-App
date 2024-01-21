@@ -10,9 +10,6 @@ import { useRouter } from 'next/navigation';
 
 export default function ProfileLayout({ children }) {
     const {user} = useContext(UserContext)
-    // const user = {
-    //     id: "598fde00-d21b-4bee-8b99-a2a0b17a809f"
-    // }
     const router = useRouter();
     useEffect(() => {
         if (!user) {

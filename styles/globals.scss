@@ -37,6 +37,9 @@
     .msg {
       @apply m-auto text-center rounded-lg sm:w-full md:w-full lg:w-3/4 xl:w-2/3 p-3
     }
+    .faded {
+      @apply text-slate-400;
+    }
 
 
     input, option, select, textarea {
@@ -49,6 +52,17 @@
 
     .sub-nav {
       @apply flex bg-slate-800 py-2 px-2 shadow-2xl gap-3;
+    }
+
+    .user-ranking {
+      @apply m-auto sm:w-full md:w-full lg:w-3/4 xl:w-2/3 shadow-xl;
+      li {
+        @apply p-4 text-2xl my-2 rounded-lg bg-slate-700 flex justify-between;
+        &:hover {
+          @apply bg-gradient-to-r from-pink-800;
+        }
+      }
+
     }
 
     .comments {
@@ -233,57 +247,94 @@
         }
       }
     }
+    .detailed-movie-list {
+      li {
+        display: grid;
+        padding: 1rem;
+        margin: 0.5rem;
+        grid-template-columns: 1fr 4fr;
+        gap: 1rem;
+        @apply rounded-lg border-2 border-slate-700 border-solid;
+      
+        &:hover {
+          @apply bg-gradient-to-r from-pink-800;
+          transition: background-color 0.3s ease;
+        }
+      
+        div {
+          div {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.3rem;
+      
+            .rating-count {
+              display: flex;
+              align-items: center;
+      
+              .rating {
+                white-space: nowrap;
+              }
+      
+              .star {
+                @apply text-xl font-bold;
+              }
+            }
+          }
+        }
+      }
+
+    }
     
     .movie-list {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
       gap: 0.5rem;
-      .movie-card {
+    }
+    .movie-card {
+      position: relative;
+    
+      .image-container {
         position: relative;
-      
-        .image-container {
-          position: relative;
-          overflow: hidden;
-          cursor: pointer;
-      
-          &:hover {
-            .overlay {
-              opacity: 1;
-            }
-          }
-      
+        overflow: hidden;
+        cursor: pointer;
+    
+        &:hover {
           .overlay {
-            padding: 0.5rem;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            color: #fff;
+            opacity: 1;
+          }
+        }
+    
+        .overlay {
+          padding: 0.5rem;
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.7);
+          color: #fff;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          opacity: 0;
+          transition: opacity 0.3s ease-in-out;
+    
+          .title {
+            text-align: center;
+            font-size: 1rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+          }
+    
+          .rating {
+            font-size: 1.1rem;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
-            opacity: 0;
-            transition: opacity 0.3s ease-in-out;
-      
-            .title {
-              text-align: center;
-              font-size: 1rem;
-              font-weight: bold;
-              margin-bottom: 0.5rem;
-            }
-      
-            .rating {
-              font-size: 1.1rem;
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              gap: 0.4rem;
-              .star {
-                font-size: 1.5rem;
-              }
+            align-items: center;
+            gap: 0.4rem;
+            .star {
+              font-size: 1.5rem;
             }
           }
         }

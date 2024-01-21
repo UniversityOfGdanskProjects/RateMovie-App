@@ -18,12 +18,10 @@ const EditMovieForm = ({ movieId }) => {
                     },
                 });
 
+                const data = await response.json();
                 if (!response.ok) {
-                    const data = await response.json();
                     setErrorMessage(data.error || 'Failed to fetch movie details');
                 }
-
-                const data = await response.json();
                 setMovie(data);
             } catch (error) {
                 console.error('Error fetching movie details:', error);
@@ -175,24 +173,24 @@ const EditMovieForm = ({ movieId }) => {
                     validationSchema={Yup.object({
                         runtime: Yup.number().typeError('Runtime must be a number').positive('Runtime must be a positive number').required("required"),
                         budget: Yup.number().typeError('Budget must be a number').positive('Budget must be a positive number').required("required"),
-                        tagline: Yup.string().required("required"),
+                        tagline: Yup.string().required("required").matches(/^\S(?:.*\S)?$/, 'Tagline cannot start or end with whitespaces'),
                         poster_path: Yup.string().url('Invalid URL format for Poster Path').required("required"),
-                        release_date: Yup.string().required("required"),
-                        overview: Yup.string().required("required"),
-                        original_language: Yup.string().required("required"),
-                        original_title: Yup.string().required("required"),
-                        title: Yup.string().required("required"),
+                        release_date: Yup.string().matches(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format. Use yyyy-mm-dd').required('Date is required'),
+                        overview: Yup.string().required("required").matches(/^\S(?:.*\S)?$/, 'Tcannot start or end with whitespaces'),
+                        original_language: Yup.string().required("required").matches(/^\S(?:.*\S)?$/, 'cannot start or end with whitespaces'),
+                        original_title: Yup.string().required("required").matches(/^\S(?:.*\S)?$/, 'cannot start or end with whitespaces'),
+                        title: Yup.string().required("required").matches(/^\S(?:.*\S)?$/, 'cannot start or end with whitespaces'),
                         backdrop_path: Yup.string().url('Invalid URL format for Backdrop Path').required("required"),
-                        images: Yup.array().of(Yup.string().required("required").url("Invalid URL format for Images")),
-                        trailers: Yup.array().of(Yup.string().required("required")),
-                        genres: Yup.array().of(Yup.string().required("required")),
+                        images: Yup.array().of(Yup.string().required("required").url("Invalid URL format for Images")).min(1, "At least one image is required"),
+                        trailers: Yup.array().of(Yup.string().required("required").matches(/^\S(?:.*\S)?$/, 'cannot start or end with whitespaces')).min(1, "At least one director is required"),
+                        genres: Yup.array().of(Yup.string().required("required").matches(/^\S(?:.*\S)?$/, 'cannot start or end with whitespaces')).min(1, "At least one genre is required"),
                         actors: Yup.array().of(
                             Yup.object().shape({
-                                id: Yup.string().required("required"),
-                                character: Yup.string().required("required"),
+                                id: Yup.string().required("required").matches(/^\S(?:.*\S)?$/, 'cannot start or end with whitespaces'),
+                                character: Yup.string().required("required").matches(/^\S(?:.*\S)?$/, 'cannot start or end with whitespaces'),
                             })
-                            ),
-                        directors: Yup.array().of(Yup.string().required("required")),
+                            ).min(1, "At least one actor is required"),
+                        directors: Yup.array().of(Yup.string().required("required").matches(/^\S(?:.*\S)?$/, 'cannot start or end with whitespaces')).min(1, "At least one director is required"),
                     })}
                     onSubmit={async (values) => {
                         try {

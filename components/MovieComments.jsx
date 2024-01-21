@@ -90,7 +90,7 @@ const MovieComments = ({ movieId }) => {
 
         const data = await response.json();
         if (response.ok) {
-          setComments([...comments, data]);
+          setComments([...comments, {...data, username: user.username}]);
           resetForm();
         } else {
           setMsg(data.error);
