@@ -70,6 +70,9 @@
     @apply flex flex-col gap-3 p-3 rounded-lg border-2 border-slate-700 border-solid mb-3;
     .notification {
       @apply bg-slate-600 p-3 rounded-lg shadow-2xl hover:bg-slate-700;
+      .comment {
+        @apply italic;
+      }
     }
   }
 
@@ -122,7 +125,6 @@
       display: flex;
       gap: 0.5rem;
       justify-content: flex-end;
-      // width: min-content;
     }
   }
 

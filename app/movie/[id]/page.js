@@ -96,7 +96,7 @@ export default function MovieDetailsPage({ params }) {
               <h2 className="text-slate-400 font-bold">{movie.tagline}</h2>
               <p className="">{movie.overview}</p>
             </div>
-            <RateCard movieId={id} />
+            <RateCard movieId={id} movie={movie} />
           </div>
           <MovieDetails movie={movie} />
           <div className="movie-gallery-trailer">

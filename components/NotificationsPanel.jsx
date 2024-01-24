@@ -18,7 +18,7 @@ export default function NotificationsPanel({ notifications, followedMovies }) {
                     <p>
                       New comment on a movie <span>{movie.title}:</span>
                     </p>
-                    <p>{notif.comment}</p>
+                    <p className="comment">{notif.comment}</p>
                     <p className="faded">{notif.time}</p>
                   </li>
                 </Link>

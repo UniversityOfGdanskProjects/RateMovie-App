@@ -1,5 +1,4 @@
 "use client";
-
 import { Formik, useFormik } from "formik";
 import * as Yup from "yup";
 import ReactStars from "react-stars";
@@ -9,9 +8,12 @@ import { AiOutlineStop } from "react-icons/ai";
 import { useContext, useEffect, useState } from "react";
 import Link from "next/link";
 import { UserContext } from "@/context/userContextProvider";
+import { NotificationsContext } from "@/context/notificationsProvider";
 
-export default function RateCard({ movieId }) {
-  const { user, setUser } = useContext(UserContext);
+export default function RateCard({ movieId, movie }) {
+  const { user } = useContext(UserContext);
+  const { followedMovies, setFollowedMovies } =
+    useContext(NotificationsContext);
   const [showReviewSection, setShowReviewSection] = useState(false);
   const [existingReview, setExistingReview] = useState(null);
   const [inWatchlist, setInWatchlist] = useState(false);
@@ -86,13 +88,18 @@ export default function RateCard({ movieId }) {
             }
           );
           if (addResponse.status === 404 || addResponse.status === 400) {
-            // console.error(`Error adding to ${type}`);
             set(false);
             return;
           }
           console.log(`Successfully added to ${type}`);
           const data = await addResponse.json();
           set(true);
+
+          if (type === "followed") {
+            console.log("dodaje do followed");
+            setFollowedMovies((prev) => [movie, ...prev]);
+          }
+
           return;
         } else {
           set(false);
@@ -103,12 +110,18 @@ export default function RateCard({ movieId }) {
             }
           );
           if (removeResponse.status === 404 || removeResponse.status === 400) {
-            // console.error(`Error adding to ${type}`);
             set(true);
             return;
           }
           const data = await removeResponse.json();
           set(false);
+          if (type === "followed") {
+            console.log("obecne followed", followedMovies);
+            console.log("usuwam z followed");
+            setFollowedMovies((prev) =>
+              prev.filter((el) => el.id !== movie.id)
+            );
+          }
           return;
         }
       } catch (error) {
@@ -120,7 +133,6 @@ export default function RateCard({ movieId }) {
   };
 
   const handleDelete = async () => {
-    // console.log("usuwam");
     setMsg("...deleting review");
     try {
       const response = await fetch(

@@ -1,5 +1,5 @@
 "use client";
-import { createContext, useState, useContext, useEffect } from "react";
+import { createContext, useState, useContext, useEffect, useRef } from "react";
 import { UserContext } from "./userContextProvider";
 import mqtt from "mqtt";
 const MQTT_ADDRESS = "ws://localhost:8000/mqtt";
@@ -10,6 +10,7 @@ export const NotificationsContextProvider = ({ children }) => {
   const { user } = useContext(UserContext);
   const [notifications, setNotifications] = useState([]);
   const [followedMovies, setFollowedMovies] = useState([]);
+  const prevFollowedMoviesRef = useRef([]);
 
   useEffect(() => {
     const mqttClient = mqtt.connect(MQTT_ADDRESS);
@@ -23,26 +24,6 @@ export const NotificationsContextProvider = ({ children }) => {
           const data = await response.json();
 
           setFollowedMovies(data.movies);
-
-          console.log("jest user");
-
-          data.movies.forEach((movie) => {
-            const topic = `comment/movie/${movie.id}`;
-            console.log("subskrybuję temat", topic);
-            mqttClient.subscribe(topic);
-          });
-
-          mqttClient.on("message", (topic, message) => {
-            console.log("powiadomienie", message.toString());
-            setNotifications((prevNotifications) => [
-              {
-                comment: message.toString(),
-                movieId: topic.split("/").pop(),
-                time: new Date().toLocaleTimeString(),
-              },
-              ...prevNotifications,
-            ]);
-          });
         } else {
           console.error("Failed to fetch data");
         }
@@ -53,12 +34,56 @@ export const NotificationsContextProvider = ({ children }) => {
 
     if (user) {
       fetchFollowedList(user.id);
+    }
+
+    return () => {
+      mqttClient.end();
+    };
+  }, [user]);
+
+  useEffect(() => {
+    if (followedMovies.length > 0) {
+      const mqttClient = mqtt.connect(MQTT_ADDRESS);
+      console.log(followedMovies);
+
+      followedMovies.forEach((movie) => {
+        const topic = `comment/movie/${movie.id}`;
+        console.log("Subscribing to topic", topic);
+        mqttClient.subscribe(topic);
+      });
+
+      mqttClient.on("message", (topic, message) => {
+        console.log("Notification received", message.toString());
+        setNotifications((prevNotifications) => [
+          {
+            comment: message.toString(),
+            movieId: topic.split("/").pop(),
+            time: new Date().toLocaleTimeString(),
+          },
+          ...prevNotifications,
+        ]);
+      });
 
       return () => {
+        console.log("kończe");
         mqttClient.end();
       };
     }
-  }, [user]);
+  }, [followedMovies]);
+
+  useEffect(() => {
+    if (prevFollowedMoviesRef.current.length > 0) {
+      const mqttClient = mqtt.connect(MQTT_ADDRESS);
+      prevFollowedMoviesRef.current.forEach((movie) => {
+        const topic = `comment/movie/${movie.id}`;
+        console.log("Unsubscribing from previous topic", topic);
+        mqttClient.unsubscribe(topic);
+      });
+      mqttClient.end();
+    }
+
+    prevFollowedMoviesRef.current = followedMovies;
+  }, [followedMovies]);
 
   return (
     <NotificationsContext.Provider
