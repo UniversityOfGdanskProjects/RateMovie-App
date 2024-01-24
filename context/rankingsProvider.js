@@ -1,10 +1,8 @@
 "use client";
 import { createContext, useState, useEffect } from "react";
 import mqtt from "mqtt";
-
 export const RankingContext = createContext();
 
-// const MQTT_ADDRESS = 'ws://localhost:1883/mqtt'
 const MQTT_ADDRESS = "ws://localhost:8000/mqtt";
 const rankingUpdateTopic = "ranking/update";
 

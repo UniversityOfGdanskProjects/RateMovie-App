@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { TbSearch } from "react-icons/tb";
+import { TbSearch, TbUser, TbBell } from "react-icons/tb";
 import { useContext, useEffect, useState } from "react";
 import { UserContext } from "@/context/userContextProvider";
+import { NotificationsContext } from "@/context/notificationsProvider";
 
 export default function Nav() {
   const { user, setUser } = useContext(UserContext);
+  const { notifications } = useContext(NotificationsContext);
 
   return (
     <nav className="flex justify-between py-2 px-2 shadow-2xl">
@@ -32,28 +34,37 @@ export default function Nav() {
             </Link>
           </>
         )}
-        <Link href="/ranking/movies">
-          <button className="small-btn">Movies Ranking</button>
-        </Link>
-        <Link href="/ranking/users">
-          <button className="small-btn">Users Ranking</button>
-        </Link>
         <Link href="/search">
           <button className="big-btn py-1 px-3 flex flex-center items-center gap-2">
             <p>Search</p>
             <TbSearch />
           </button>
         </Link>
+        <Link href="/ranking/movies">
+          <button className="small-btn">Movies Ranking</button>
+        </Link>
+        <Link href="/ranking/users">
+          <button className="small-btn">Users Ranking</button>
+        </Link>
         {user && (
           <Link href="/profile" className="flex gap-2 flex-center items-center">
-            <Image
-              src="/assets/images/profile.svg"
-              width={30}
-              height={30}
-              className="rounded-full"
-              alt="profile"
-            />
-            <p className="">Profile</p>
+            <button className="small-btn">
+              <p className="">Profile</p>
+              <TbUser className="text-xl" />
+            </button>
+          </Link>
+        )}
+        {user && (
+          <Link
+            href="/profile/followed"
+            className="flex gap-2 flex-center items-center"
+          >
+            <button className="small-btn">
+              <TbBell className="text-2xl" />
+              {notifications && (
+                <div className="text-sm">{notifications.length}</div>
+              )}
+            </button>
           </Link>
         )}
         {user && (

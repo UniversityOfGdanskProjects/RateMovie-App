@@ -28,6 +28,11 @@ export default function ProfileLayout({ children }) {
                   Profile <TbUser className="text-xl" />
                 </button>
               </Link>
+              <Link href="/profile/followed">
+                <button className="big-btn">
+                  Notifications <TbBell className="text-xl" />
+                </button>
+              </Link>
               <Link href="/profile/watchlist">
                 <button className="big-btn">
                   Watchlist <TbEye className="text-xl" />
@@ -36,11 +41,6 @@ export default function ProfileLayout({ children }) {
               <Link href="/profile/reviewed">
                 <button className="big-btn">
                   Reviewed <TbStar className="text-xl" />
-                </button>
-              </Link>
-              <Link href="/profile/followed">
-                <button className="big-btn">
-                  Followed <TbBell className="text-xl" />
                 </button>
               </Link>
               <Link href="/profile/favourites">
