@@ -11,16 +11,12 @@ import {
   isValidRating,
   isValidateCommentReview,
 } from "../../helpers/validation.js";
+import {
+  sendRankingUpdate,
+  sendNotification,
+} from "../../mqtt/mqttPublisher.js";
 import { checkNodeExistence } from "../../helpers/checkExistence.js";
 import { v4 as uuidv4 } from "uuid";
-import mqtt from "mqtt";
-import { config } from "dotenv";
-
-config();
-
-const { MQTT_ADDRESS } = process.env;
-const rankingUpdateTopic = "ranking/update";
-const mqttClient = mqtt.connect(MQTT_ADDRESS);
 
 export const getFavouriteMovies = async (req, res) => {
   await getMoviesByRelation(req, res, "FAVOURITES");
@@ -70,7 +66,6 @@ export const rateMovie = async (req, res) => {
   const movieId = req.params.movieId ? req.params.movieId : req.body.movieId;
   const { userId, rating, review, date } = req.body;
   const session = driver.session();
-
 
   const newDate = date ? date : new Date().toISOString().split("T")[0];
 
@@ -152,8 +147,8 @@ export const rateMovie = async (req, res) => {
     const watchlistMessage = isInWatchlist
       ? "Movie removed from watchlist."
       : "";
-    // ------------------------------------------------------------------------
-    mqttClient.publish(rankingUpdateTopic, "Ranking has been updated");
+
+    sendRankingUpdate();
 
     res.status(created ? 201 : 200).json({
       message: `${successMessage} ${watchlistMessage}`,
@@ -217,6 +212,7 @@ export const commentMovie = async (req, res) => {
     );
 
     const createdRelationship = result.records[0].get("r").properties;
+    sendNotification(movieId, comment);
     res.status(200).json(createdRelationship);
   } catch (error) {
     console.error(error);

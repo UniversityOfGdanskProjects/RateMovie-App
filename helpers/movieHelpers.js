@@ -83,7 +83,6 @@ export const getMoviesByRelation = async (req, res, relationType) => {
         `;
 
     const result = await session.run(query, { userId });
-    console.log(result);
     const data = result.records.map((record) => {
       const movie = record.get("m").properties;
       const relationsContent = record.get("relationContent")[0].properties;
