@@ -2,10 +2,12 @@
 import React, { useContext, useEffect, useState, useLayoutEffect } from "react";
 import { UserContext } from "@/context/userContextProvider";
 import MovieList from "@/components/MovieList";
+import LoadingPage from "@/components/LoadingPage";
 
 export default function WatchlistPage() {
   const { user } = useContext(UserContext);
   const [watchlistMovies, setWatchlistMovies] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useLayoutEffect(() => {
     const fetchWatchlist = async (userId) => {
@@ -16,6 +18,7 @@ export default function WatchlistPage() {
         if (response.ok) {
           const data = await response.json();
           setWatchlistMovies(data.movies);
+          setIsLoading(false);
         } else {
           console.error("Failed to fetch data. Status:", response.status);
         }
@@ -24,10 +27,12 @@ export default function WatchlistPage() {
       }
     };
 
-    if (user) fetchWatchlist(user.id);
+    if (user) {
+      fetchWatchlist(user.id);
+    }
   }, []);
 
-  return (
+  return !isLoading ? (
     <section className="users-list-page">
       <h1>Watchlist</h1>
       {watchlistMovies.length !== 0 && (
@@ -37,5 +42,7 @@ export default function WatchlistPage() {
         <MovieList movies={watchlistMovies} isPersonal={true} />
       )}
     </section>
+  ) : (
+    <LoadingPage />
   );
 }

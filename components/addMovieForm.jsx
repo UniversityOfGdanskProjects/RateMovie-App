@@ -130,8 +130,6 @@ const AddMovieForm = () => {
         })}
         onSubmit={async (values) => {
           try {
-            console.log("___________________________", values);
-            console.log(user.token);
             const response = await fetch(
               "http://localhost:7000/api/admin/addMovie",
               {
@@ -298,6 +296,7 @@ const AddMovieForm = () => {
           </Form>
         )}
       </Formik>
+      {errorMessage && <p className="msg">{errorMessage}</p>}
     </div>
   );
 };
