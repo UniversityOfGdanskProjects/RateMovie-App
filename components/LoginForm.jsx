@@ -27,7 +27,7 @@ export default function LoginForm({ isForAdmin }) {
       }
 
       const data = await response.json();
-      console.log({ ...data.user, token: data.token });
+      // console.log({ ...data.user, token: data.token });
       setUser({ ...data.user, token: data.token });
 
       formik.resetForm();
@@ -53,7 +53,6 @@ export default function LoginForm({ isForAdmin }) {
   return (
     <>
       <form className="form" onSubmit={formik.handleSubmit}>
-        {/* <h2>{isForAdmin && "Admin "}Login form</h2> */}
         {loginMessage && <div>{loginMessage}</div>}
         <label htmlFor="username1">
           Username:

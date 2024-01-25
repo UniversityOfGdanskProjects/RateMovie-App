@@ -1,6 +1,7 @@
 "use client";
 import { createContext, useState, useEffect } from "react";
 import mqtt from "mqtt";
+
 export const RankingContext = createContext();
 
 const MQTT_ADDRESS = "ws://localhost:8000/mqtt";
@@ -27,7 +28,7 @@ export const RankingContextProvider = ({ children }) => {
     fetchUsers();
 
     const handleRankingUpdate = (message) => {
-      console.log("Received ranking update:", message);
+      // console.log("Received ranking update:", message);
       fetchMovies();
       fetchUsers();
     };
@@ -35,7 +36,7 @@ export const RankingContextProvider = ({ children }) => {
     const mqttClient = mqtt.connect(MQTT_ADDRESS);
 
     mqttClient.on("connect", () => {
-      console.log("Connected to MQTT broker in context");
+      // console.log("Connected to MQTT broker in context");
       mqttClient.subscribe(rankingUpdateTopic);
     });
 
@@ -47,6 +48,7 @@ export const RankingContextProvider = ({ children }) => {
 
     return () => {
       if (mqttClient) {
+        // console.log("łokieć pięta nie ma klienta");
         mqttClient.end();
       }
     };

@@ -4,7 +4,7 @@ import Link from "next/link";
 export default function NotificationsPanel({ notifications, followedMovies }) {
   return (
     <>
-      {notifications.length !== 0 ? (
+      {notifications.length !== 0 && followedMovies.length !== 0 ? (
         <ul className="notifications-panel">
           <h1>Notifications ({notifications.length}):</h1>
           {notifications &&
@@ -13,7 +13,10 @@ export default function NotificationsPanel({ notifications, followedMovies }) {
                 (movie) => movie.id === notif.movieId
               );
               return (
-                <Link href={`/movie/${movie.id}`}>
+                <Link
+                  key={`${index}-${movie.id}-link`}
+                  href={`/movie/${movie.id}`}
+                >
                   <li className="notification" key={`${index}-${movie.id}`}>
                     <p>
                       New comment on a movie <span>{movie.title}:</span>
