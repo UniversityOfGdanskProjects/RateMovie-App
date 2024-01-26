@@ -275,7 +275,7 @@ export const removeMovieFromCommented = async (req, res) => {
 
 export const removeMovieFromReviewed = async (req, res) => {
   await removeMovieFromAction(req, res, "REVIEWED");
-  mqttClient.publish(rankingUpdateTopic, "Ranking has been updated");
+  sendRankingUpdate();
 };
 
 export const addMovieToFavourites = async (req, res) => {

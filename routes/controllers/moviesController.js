@@ -44,13 +44,13 @@ export const getPopularMovies = async (req, res) => {
             WITH m, COUNT(DISTINCT r) AS rating_count, COLLECT (DISTINCT genre) as genres, AVG(r.rating) AS rating_avg, ignores
             WHERE ignores IS NULL
             RETURN m, rating_count, genres, rating_avg
-            ORDER BY rating_count DESC
+            ORDER BY rating_count DESC, rating_avg DESC
             LIMIT 20`
     : `MATCH (u:User)-[r:REVIEWED]->(m:Movie)
             OPTIONAL MATCH (m)-[:IN_GENRE]->(genre: Genre)
             WITH m, COUNT(DISTINCT r) AS rating_count, COLLECT (DISTINCT genre) as genres, AVG(r.rating) AS rating_avg
             RETURN m, rating_count, genres, rating_avg
-            ORDER BY rating_count DESC
+            ORDER BY rating_count DESC, rating_avg DESC
             LIMIT 20`;
 
   try {
@@ -215,10 +215,14 @@ export const getGenres = async (req, res) => {
 export const getActors = async (req, res) => {
   const session = driver.session();
   const n = req.params.n || 0;
-  const number = parseInt(n)
+  const number = parseInt(n);
   try {
     const result = await session.executeRead((tx) =>
-      tx.run(`MATCH (n:Actor) RETURN n ORDER BY n.name SKIP ${number * 200} LIMIT 200`)
+      tx.run(
+        `MATCH (n:Actor) RETURN n ORDER BY n.name SKIP ${
+          number * 300
+        } LIMIT 300`
+      )
     );
 
     const data = result.records.map((record) => record.get("n").properties);
@@ -238,7 +242,9 @@ export const getDirectors = async (req, res) => {
   try {
     const result = await session.executeRead((tx) =>
       tx.run(
-        `MATCH (d:Director) RETURN d ORDER BY d.name SKIP ${number * 200} LIMIT 200`
+        `MATCH (d:Director) RETURN d ORDER BY d.name SKIP ${
+          number * 300
+        } LIMIT 300`
       )
     );
 

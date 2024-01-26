@@ -15,6 +15,7 @@ export const sendRankingUpdate = () => {
       (err) => {
         if (err) {
           console.error("Error publishing ranking update:", err);
+          mqttClient.end();
         }
         mqttClient.end();
       }
@@ -34,6 +35,7 @@ export const sendNotification = (movieId, comment) => {
       console.log("wysyłam na", topic, "komentarz", comment);
       if (err) {
         console.error("Error sending notifiaction:", err);
+        mqttClient.end();
       }
       mqttClient.end();
     });
