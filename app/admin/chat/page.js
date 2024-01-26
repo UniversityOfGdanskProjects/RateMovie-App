@@ -60,6 +60,8 @@ export default function AdminChatPage() {
   const handleJoin = () => {
     setJoined(true);
     const topic = `chat/admin`;
+
+    mqttClient.subscribe(topic);
     const sentMessage = {
       sender: user.username,
       text: "has joined the chat",
@@ -95,6 +97,7 @@ export default function AdminChatPage() {
         }
       }
     );
+    mqttClient.unsubscribe(topic);
   };
 
   return (
@@ -112,11 +115,16 @@ export default function AdminChatPage() {
               ))}
           </section>
           <form className="form" onSubmit={sendMessage}>
-            <input
-              type="text"
-              value={messageInput}
-              onChange={(e) => setMessageInput(e.target.value)}
-            />
+            <label htmlFor="chat">
+              {`${user.username}:`}
+              <input
+                className="ml-2"
+                id="chat"
+                type="text"
+                value={messageInput}
+                onChange={(e) => setMessageInput(e.target.value)}
+              />
+            </label>
             <div className="buttons">
               <button
                 type="button"

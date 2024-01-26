@@ -1,18 +1,53 @@
 "use client";
-import React, { useContext, useLayoutEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { UserContext } from "@/context/userContextProvider";
-import { FaHeart } from "react-icons/fa6";
-import { TbEyePlus, TbBellPlus, TbCirclePlus } from "react-icons/tb";
-import { AiOutlineStop } from "react-icons/ai";
 
 export default function ProfilePage() {
   const { user } = useContext(UserContext);
+  const [message, setMessage] = useState("");
+  const [quote, setQuote] = useState(null);
 
+  useEffect(() => {
+    const eventSource = new EventSource("http://localhost:7000/api/sse");
+
+    eventSource.onmessage = (event) => {
+      const result = JSON.parse(event.data);
+      console.log(result.quote);
+      setQuote(result);
+    };
+
+    eventSource.onclose = () => {
+      console.log("Server connection closed");
+    };
+
+    return () => {
+      eventSource.close();
+    };
+  }, []);
   return (
-    <section>
-      {user && user.username && (
-        <h1 className="msg">Welcome {user.username}!</h1>
-      )}
+    <section className="">
+      <div className="backdrop-container">
+        <div className="backdrop-info flex flex-col items-center">
+          <div className="p-4 text-white rounded-lg">
+            {quote && (
+              <>
+                <p className="italic text-2xl">{quote.quote}</p>
+                <p className="opacity-70">~ {quote.director}</p>
+              </>
+            )}
+          </div>
+        </div>
+        <div className="backdrop-gradient"></div>
+        <img
+          src={
+            !quote
+              ? "https://image.tmdb.org/t/p/original/8QXGNP0Vb4nsYKub59XpAhiUSQN.jpg"
+              : quote.image
+          }
+          alt="Backdrop"
+          className="backdrop opacity-75"
+        />
+      </div>
     </section>
   );
 }
