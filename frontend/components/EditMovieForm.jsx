@@ -20,7 +20,7 @@ const EditMovieForm = ({ movie, setMovie }) => {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${user.token}`,
+            // Authorization: `Bearer ${user.token}`,
           },
           body: JSON.stringify({ movieId: String(movie.id) }),
         }
@@ -180,12 +180,12 @@ const EditMovieForm = ({ movie, setMovie }) => {
                 setErrorMessage("submiting...");
                 console.log("z edita");
                 const response = await fetch(
-                  `${process.env.NEXT_PUBLIC_API_URL}editMovie?id=${movie.id}`,
+                  `${process.env.NEXT_PUBLIC_API_URL}admin/editMovie?id=${movie.id}`,
                   {
                     method: "PATCH",
                     headers: {
                       "Content-Type": "application/json",
-                      Authorization: `Bearer ${user.token}`,
+                      // Authorization: `Bearer ${user.token}`,
                     },
                     body: JSON.stringify(values),
                   }
