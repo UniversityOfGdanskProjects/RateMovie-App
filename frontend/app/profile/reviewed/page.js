@@ -13,7 +13,7 @@ export default function ReviewedPage() {
     const fetchReviewedList = async (userId) => {
       try {
         const response = await fetch(
-          `http://localhost:7000/api/reviewed/${userId}`
+          `${process.env.NEXT_PUBLIC_API_URL}reviewed/${userId}`
         );
         if (response.ok) {
           const data = await response.json();

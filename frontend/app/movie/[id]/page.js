@@ -17,7 +17,9 @@ export default function MovieDetailsPage({ params }) {
   useEffect(() => {
     const fetchMovie = async () => {
       try {
-        const response = await fetch(`http://localhost:7000/api/movie/${id}`);
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}movie/${id}`
+        );
 
         if (response.status === 404) {
           setErrorMsg("Movie not found");

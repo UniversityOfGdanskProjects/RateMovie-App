@@ -15,7 +15,7 @@ const EditMovieForm = ({ movie, setMovie }) => {
     try {
       setErrorMessage("Deleting movie...");
       const deleteResponse = await fetch(
-        `http://localhost:7000/api/admin/deleteMovie`,
+        `${process.env.NEXT_PUBLIC_API_URL}admin/deleteMovie`,
         {
           method: "DELETE",
           headers: {
@@ -180,7 +180,7 @@ const EditMovieForm = ({ movie, setMovie }) => {
                 setErrorMessage("submiting...");
                 console.log("z edita");
                 const response = await fetch(
-                  `http://localhost:7000/api/admin/editMovie?id=${movie.id}`,
+                  `${process.env.NEXT_PUBLIC_API_URL}editMovie?id=${movie.id}`,
                   {
                     method: "PATCH",
                     headers: {

@@ -1,6 +1,3 @@
-import React, { useContext } from "react";
-import { UserContext } from "@/context/userContextProvider";
-
 import LoginForm from "@/components/LoginForm";
 import RegisterForm from "@/components/RegisterForm";
 

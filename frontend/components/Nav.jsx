@@ -5,11 +5,9 @@ import Image from "next/image";
 import { TbSearch, TbUser, TbBell } from "react-icons/tb";
 import { useContext, useEffect, useState } from "react";
 import { UserContext } from "@/context/userContextProvider";
-import { NotificationsContext } from "@/context/notificationsProvider";
 
 export default function Nav() {
   const { user, setUser } = useContext(UserContext);
-  const { notifications } = useContext(NotificationsContext);
 
   return (
     <nav className="flex justify-between py-2 px-2 shadow-2xl">
@@ -51,19 +49,6 @@ export default function Nav() {
             <button className="small-btn">
               <p className="">Profile</p>
               <TbUser className="text-xl" />
-            </button>
-          </Link>
-        )}
-        {user && (
-          <Link
-            href="/profile/followed"
-            className="flex gap-2 flex-center items-center"
-          >
-            <button className="small-btn">
-              <TbBell className="text-2xl" />
-              {notifications && (
-                <div className="text-sm">{notifications.length}</div>
-              )}
             </button>
           </Link>
         )}

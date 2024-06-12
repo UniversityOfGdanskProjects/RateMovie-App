@@ -1,23 +1,19 @@
 "use client";
-import { Formik, useFormik } from "formik";
+import { useFormik } from "formik";
 import * as Yup from "yup";
 import ReactStars from "react-stars";
 import { FaHeart } from "react-icons/fa6";
-import { TbEyePlus, TbBellPlus, TbCirclePlus } from "react-icons/tb";
+import { TbEyePlus, TbCirclePlus } from "react-icons/tb";
 import { AiOutlineStop } from "react-icons/ai";
 import { useContext, useEffect, useState } from "react";
 import Link from "next/link";
 import { UserContext } from "@/context/userContextProvider";
-import { NotificationsContext } from "@/context/notificationsProvider";
 
 export default function RateCard({ movieId, movie }) {
   const { user } = useContext(UserContext);
-  const { followedMovies, setFollowedMovies } =
-    useContext(NotificationsContext);
   const [showReviewSection, setShowReviewSection] = useState(false);
   const [existingReview, setExistingReview] = useState(null);
   const [inWatchlist, setInWatchlist] = useState(false);
-  const [inFollowed, setInFollowed] = useState(false);
   const [inIgnored, setInIgnored] = useState(false);
   const [inFavourites, setInFavourties] = useState(false);
   const [msg, setMsg] = useState("");
@@ -28,7 +24,7 @@ export default function RateCard({ movieId, movie }) {
       setMsg("...adding review");
 
       const response = await fetch(
-        `http://localhost:7000/api/movies/${movieId}/rate`,
+        `${process.env.NEXT_PUBLIC_API_URL}movies/${movieId}/rate`,
         {
           method: "POST",
           headers: {
@@ -73,12 +69,12 @@ export default function RateCard({ movieId, movie }) {
     if (user) {
       try {
         const relationExists = await fetch(
-          `http://localhost:7000/api/${type}/${user.id}/${movieId}`
+          `${process.env.NEXT_PUBLIC_API_URL}${type}/${user.id}/${movieId}`
         );
         if (relationExists.status === 204) {
           set(true);
           const addResponse = await fetch(
-            `http://localhost:7000/api/movies/${movieId}/addTo${action}`,
+            `${process.env.NEXT_PUBLIC_API_URL}movies/${movieId}/addTo${action}`,
             {
               method: "POST",
               headers: {
@@ -104,7 +100,7 @@ export default function RateCard({ movieId, movie }) {
         } else {
           set(false);
           const removeResponse = await fetch(
-            `http://localhost:7000/api/removeFrom${action}/${user.id}/${movieId}`,
+            `${process.env.NEXT_PUBLIC_API_URL}removeFrom${action}/${user.id}/${movieId}`,
             {
               method: "DELETE",
             }
@@ -136,7 +132,7 @@ export default function RateCard({ movieId, movie }) {
     setMsg("...deleting review");
     try {
       const response = await fetch(
-        `http://localhost:7000/api/removeFromReviewed/${user.id}/${movieId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}removeFromReviewed/${user.id}/${movieId}`,
         {
           method: "DELETE",
           headers: {
@@ -160,23 +156,24 @@ export default function RateCard({ movieId, movie }) {
     const fetchReview = async () => {
       try {
         if (user && movieId) {
-          const [
-            isInReviewed,
-            isInFav,
-            isInIgnored,
-            isInFollowed,
-            isInWatchlist,
-          ] = await Promise.all([
-            fetch(`http://localhost:7000/api/review/${user.id}/${movieId}`),
-            fetch(`http://localhost:7000/api/favourite/${user.id}/${movieId}`),
-            fetch(`http://localhost:7000/api/ignored/${user.id}/${movieId}`),
-            fetch(`http://localhost:7000/api/followed/${user.id}/${movieId}`),
-            fetch(`http://localhost:7000/api/watchlist/${user.id}/${movieId}`),
-          ]);
+          const [isInReviewed, isInFav, isInIgnored, isInWatchlist] =
+            await Promise.all([
+              fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}review/${user.id}/${movieId}`
+              ),
+              fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}favourite/${user.id}/${movieId}`
+              ),
+              fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}ignored/${user.id}/${movieId}`
+              ),
+              fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}watchlist/${user.id}/${movieId}`
+              ),
+            ]);
 
           if (isInFav.status === 200) setInFavourties(true);
           if (isInIgnored.status === 200) setInIgnored(true);
-          if (isInFollowed.status === 200) setInFollowed(true);
           if (isInWatchlist.status === 200) setInWatchlist(true);
 
           if (isInReviewed.status === 200) {
@@ -232,14 +229,6 @@ export default function RateCard({ movieId, movie }) {
           onClick={() =>
             handleIconClick("Watchlist", "watchlist", setInWatchlist)
           }
-        />
-        <TbBellPlus
-          className={`${
-            inFollowed
-              ? "text-yellow-300 hover:text-yellow-500"
-              : "text-slate-300 hover:text-slate-100"
-          } hover:cursor-pointer`}
-          onClick={() => handleIconClick("Followed", "followed", setInFollowed)}
         />
         <AiOutlineStop
           className={`${

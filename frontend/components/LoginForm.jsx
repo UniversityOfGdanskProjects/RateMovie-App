@@ -11,7 +11,9 @@ export default function LoginForm({ isForAdmin }) {
   const loginUser = async (username, password, formik) => {
     try {
       const response = await fetch(
-        `http://localhost:7000/api/${isForAdmin ? "admin" : "users"}/login`,
+        `${process.env.NEXT_PUBLIC_API_URL}${
+          isForAdmin ? "admin" : "users"
+        }/login`,
         {
           method: "POST",
           headers: {

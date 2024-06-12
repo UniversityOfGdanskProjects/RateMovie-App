@@ -77,7 +77,6 @@ export const getPopularMovies = async (req, res) => {
 export const getMovieById = async (req, res) => {
   const id = req.params.movieId;
   const session = driver.session();
-
   try {
     const result = await session.executeRead((tx) =>
       tx.run(
@@ -94,7 +93,6 @@ export const getMovieById = async (req, res) => {
         { id: id }
       )
     );
-
     if (result.records.length === 0) {
       res.status(404).json({ error: "Movie not found" });
     } else {

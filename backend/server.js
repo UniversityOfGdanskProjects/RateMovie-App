@@ -1,6 +1,5 @@
 import express from "express";
 import cors from "cors";
-import mqtt from "mqtt";
 import moviesRoutes from "./routes/moviesRoutes.js";
 import usersRoutes from "./routes/usersRoutes.js";
 import userDataRoutes from "./routes/userDataRoutes.js";

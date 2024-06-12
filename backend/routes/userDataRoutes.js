@@ -86,6 +86,9 @@ userDataRoutes.delete(
   "/api/removeFromReviewed/:userId/:movieId",
   removeMovieFromReviewed
 );
-// userDataRoutes.delete('/api/removeFromCommented/:userId/:movieId', removeMovieFromCommented);
+userDataRoutes.delete(
+  "/api/removeFromCommented/:userId/:movieId",
+  removeMovieFromCommented
+);
 
 export default userDataRoutes;

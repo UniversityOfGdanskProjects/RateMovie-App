@@ -114,7 +114,7 @@ export const loginAdmin = async (req, res) => {
       message: "Login successful",
       token: token,
       user: {
-        isAdmin: true,
+        isAdmin: userResult.records[0].get("user").properties.isAdmin,
         username: userResult.records[0].get("user").properties.username,
         id: userResult.records[0].get("user").properties.userId,
       },
@@ -736,6 +736,7 @@ export const addMovieFromTMDB = async (req, res) => {
   const session = driver.session();
   try {
     const { movieId } = req.body;
+    console.log(movieId);
 
     if (!movieId) {
       res.status(400).json({ error: "movieId is required" });

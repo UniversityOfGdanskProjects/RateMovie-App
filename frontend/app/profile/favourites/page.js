@@ -13,7 +13,7 @@ export default function FavPage() {
     const fetchList = async (list, userId) => {
       try {
         const response = await fetch(
-          `http://localhost:7000/api/${list}/${userId}`
+          `${process.env.NEXT_PUBLIC_API_URL}${list}/${userId}`
         );
         if (response.ok) {
           const data = await response.json();

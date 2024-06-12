@@ -12,8 +12,8 @@ export default function RegisterForm({ isForAdmin }) {
     console.log(values);
     try {
       const url = isForAdmin
-        ? "http://localhost:7000/api/admin/register"
-        : "http://localhost:7000/api/users/register";
+        ? `${process.env.NEXT_PUBLIC_API_URL}admin/register`
+        : `${process.env.NEXT_PUBLIC_API_URL}users/register`;
       const response = await fetch(url, {
         method: "POST",
         headers: {

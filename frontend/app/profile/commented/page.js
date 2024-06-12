@@ -13,7 +13,7 @@ export default function CommentedPage() {
     const fetchCommentedList = async (userId) => {
       try {
         const response = await fetch(
-          `http://localhost:7000/api/commented/${userId}`
+          `${process.env.NEXT_PUBLIC_API_URL}commented/${userId}`
         );
         if (response.ok) {
           const data = await response.json();

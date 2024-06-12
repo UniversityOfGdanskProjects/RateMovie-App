@@ -18,7 +18,7 @@ export default function AddTMDBMovieForm() {
       setMsg("adding...");
       try {
         const response = await fetch(
-          "http://localhost:7000/api/admin/addMovieFromTMDB",
+          `${process.env.NEXT_PUBLIC_API_URL}admin/addMovieFromTMDB`,
           {
             method: "POST",
             headers: {

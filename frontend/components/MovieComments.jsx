@@ -24,7 +24,7 @@ const MovieComments = ({ movieId }) => {
     onSubmit: async (values, { resetForm }) => {
       try {
         const response = await fetch(
-          "http://localhost:7000/api/movies/comment",
+          `${process.env.NEXT_PUBLIC_API_URL}movies/comment`,
           {
             method: "PUT",
             headers: {
@@ -63,7 +63,7 @@ const MovieComments = ({ movieId }) => {
     const fetchComments = async () => {
       try {
         const response = await fetch(
-          `http://localhost:7000/api/${movieId}/comments`
+          `${process.env.NEXT_PUBLIC_API_URL}${movieId}/comments`
         );
         const data = await response.json();
         if (response.ok) {
@@ -93,7 +93,7 @@ const MovieComments = ({ movieId }) => {
     onSubmit: async (values, { resetForm }) => {
       try {
         const response = await fetch(
-          `http://localhost:7000/api/movies/${movieId}/comment`,
+          `${process.env.NEXT_PUBLIC_API_URL}movies/${movieId}/comment`,
           {
             method: "POST",
             headers: {
@@ -121,13 +121,16 @@ const MovieComments = ({ movieId }) => {
 
   const handleDeleteComment = async (commentId) => {
     try {
-      const response = await fetch("http://localhost:7000/api/movies/comment", {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ commentId }),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}movies/comment`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ commentId }),
+        }
+      );
 
       const data = await response.json();
       if (response.ok) {

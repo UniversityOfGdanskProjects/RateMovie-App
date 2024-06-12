@@ -2,7 +2,6 @@ import { Red_Hat_Display } from "next/font/google";
 import "../styles/globals.scss";
 import Nav from "@/components/Nav";
 import { UserContextProvider } from "@/context/userContextProvider";
-import { NotificationsContextProvider } from "@/context/notificationsProvider";
 
 const red_hat = Red_Hat_Display({ subsets: ["latin"] });
 
@@ -16,10 +15,8 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={`${red_hat.className} bg-slate-800 text-slate-200`}>
         <UserContextProvider>
-          <NotificationsContextProvider>
-            <Nav />
-            {children}
-          </NotificationsContextProvider>
+          <Nav />
+          {children}
         </UserContextProvider>
       </body>
     </html>

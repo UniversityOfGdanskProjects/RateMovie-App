@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import MovieList from "@/components/MovieList";
 import { UserContext } from "@/context/userContextProvider";
@@ -18,9 +17,10 @@ export default function App() {
       try {
         const userIdQuery = user ? `?userId=${user.id}` : "";
         const response = await fetch(
-          `http://localhost:7000/api/movies/popular${userIdQuery}`
+          `${process.env.NEXT_PUBLIC_API_URL}movies/popular${userIdQuery}`
         );
         const data = await response.json();
+        console.log(data);
         if (response.ok) {
           setError("");
           setMovies(data);

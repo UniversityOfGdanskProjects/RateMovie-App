@@ -9,7 +9,7 @@ export default function ActorsList() {
     const fetchData = async () => {
       try {
         const response = await fetch(
-          `http://localhost:7000/api/actors/${currentPage}`
+          `${process.env.NEXT_PUBLIC_API_URL}actors/${currentPage}`
         );
         const data = await response.json();
         setActors(data);

@@ -1,0 +1,29 @@
+version: "3.8"
+services:
+  db:
+    container_name: movie-db
+    image: neo4j:5.20.0-community
+    ports:
+      - 7474:7474
+      - 7687:7687
+    restart: unless-stopped
+    env_file: ./db/.env
+    # environment:
+    #   - NEO4J_AUTH=${NEO4J_AUTH}
+    volumes:
+      - ./db/data:/data
+      - ./db/conf:/conf
+      - ./db/logs:/logs
+      - ./db/plugins:/plugins
+  api:
+    container_name: movie-api
+    env_file: ./backend/.env
+    ports:
+      - "7000:7000"
+    build: ./backend
+
+  frontend:
+    container_name: movie-frontend
+    env_file: ./frontend/.env
+    ports:
+      - "3000:3000"

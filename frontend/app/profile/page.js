@@ -8,7 +8,9 @@ export default function ProfilePage() {
   const [quote, setQuote] = useState(null);
 
   useEffect(() => {
-    const eventSource = new EventSource("http://localhost:7000/api/sse");
+    const eventSource = new EventSource(
+      `${process.env.NEXT_PUBLIC_API_URL}sse`
+    );
 
     eventSource.onmessage = (event) => {
       const result = JSON.parse(event.data);

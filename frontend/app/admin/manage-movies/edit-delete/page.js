@@ -27,7 +27,7 @@ export default function EditDeleteMovie() {
     const fetchMovieDetails = async () => {
       try {
         const response = await fetch(
-          `http://localhost:7000/api/movie/${movieId}`,
+          `${process.env.NEXT_PUBLIC_API_URL}movie/${movieId}`,
           {
             method: "GET",
             headers: {

@@ -13,7 +13,7 @@ export default function IgnoredPage() {
     const fetchIgnoredList = async (userId) => {
       try {
         const response = await fetch(
-          `http://localhost:7000/api/ignored/${userId}`
+          `${process.env.NEXT_PUBLIC_API_URL}ignored/${userId}`
         );
         if (response.ok) {
           const data = await response.json();

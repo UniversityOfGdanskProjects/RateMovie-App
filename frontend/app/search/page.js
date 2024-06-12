@@ -25,7 +25,9 @@ export default function SearchPage() {
   useEffect(() => {
     const fetchGenres = async () => {
       try {
-        const response = await fetch("http://localhost:7000/api/genres");
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}genres`
+        );
         const data = await response.json();
         setGenres(data);
       } catch (error) {
@@ -45,7 +47,7 @@ export default function SearchPage() {
       if (user) queryParams.set("userId", user.id);
 
       const response = await fetch(
-        `http://localhost:7000/api/movies/search?${queryParams}`
+        `${process.env.NEXT_PUBLIC_API_URL}movies/search?${queryParams}`
       );
       const data = await response.json();
 

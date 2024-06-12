@@ -11,10 +11,7 @@ import {
   isValidRating,
   isValidateCommentReview,
 } from "../../helpers/validation.js";
-import {
-  sendRankingUpdate,
-  sendNotification,
-} from "../../mqtt/mqttPublisher.js";
+
 import { checkNodeExistence } from "../../helpers/checkExistence.js";
 import { v4 as uuidv4 } from "uuid";
 
@@ -148,8 +145,6 @@ export const rateMovie = async (req, res) => {
       ? "Movie removed from watchlist."
       : "";
 
-    sendRankingUpdate();
-
     res.status(created ? 201 : 200).json({
       message: `${successMessage} ${watchlistMessage}`,
       review: newReview,
@@ -212,7 +207,6 @@ export const commentMovie = async (req, res) => {
     );
 
     const createdRelationship = result.records[0].get("r").properties;
-    sendNotification(movieId, comment);
     res.status(200).json(createdRelationship);
   } catch (error) {
     console.error(error);
@@ -275,7 +269,6 @@ export const removeMovieFromCommented = async (req, res) => {
 
 export const removeMovieFromReviewed = async (req, res) => {
   await removeMovieFromAction(req, res, "REVIEWED");
-  sendRankingUpdate();
 };
 
 export const addMovieToFavourites = async (req, res) => {

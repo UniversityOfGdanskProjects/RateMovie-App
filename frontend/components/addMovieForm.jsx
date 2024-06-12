@@ -131,7 +131,7 @@ const AddMovieForm = () => {
         onSubmit={async (values) => {
           try {
             const response = await fetch(
-              "http://localhost:7000/api/admin/addMovie",
+              `${process.env.NEXT_PUBLIC_API_URL}admin/addMovie`,
               {
                 method: "POST",
                 headers: {

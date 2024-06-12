@@ -27,14 +27,6 @@ export default function ProfileLayout({ children }) {
               <Link href="/admin/manage-movies/add-from-tmdb">
                 <button className="big-btn">Movies</button>
               </Link>
-              <Link href="/admin/chat">
-                <button className="big-btn">Admin Chat</button>
-              </Link>
-              {/* <Link href='/admin/manage-ratings'>
-                    <button className='big-btn'>
-                        Ratings
-                    </button>
-                </Link> */}
             </nav>
           </section>
           {children}

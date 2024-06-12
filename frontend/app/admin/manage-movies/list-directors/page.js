@@ -8,7 +8,9 @@ export default function DirectorsList() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`http://localhost:7000/api/directors/${currentPage}`);
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}directors/${currentPage}`
+        );
         const data = await response.json();
         setDirectors(data);
       } catch (error) {
@@ -32,10 +34,18 @@ export default function DirectorsList() {
       <h1 className="msg">Directors List</h1>
       <section className="text-center">
         <div className="flex gap-2">
-          <button className="small-btn" onClick={handlePrevPage} disabled={currentPage === 0}>
+          <button
+            className="small-btn"
+            onClick={handlePrevPage}
+            disabled={currentPage === 0}
+          >
             Previous
           </button>
-          <button className="small-btn" onClick={handleNextPage} disabled={directors.length < 200}>
+          <button
+            className="small-btn"
+            onClick={handleNextPage}
+            disabled={directors.length < 200}
+          >
             Next
           </button>
         </div>
@@ -46,10 +56,18 @@ export default function DirectorsList() {
           >{`${director.name}, ID: ${director.id}`}</div>
         ))}
         <div className="flex gap-2">
-          <button className="small-btn" onClick={handlePrevPage} disabled={currentPage === 0}>
+          <button
+            className="small-btn"
+            onClick={handlePrevPage}
+            disabled={currentPage === 0}
+          >
             Previous
           </button>
-          <button className="small-btn" onClick={handleNextPage} disabled={directors.length < 200}>
+          <button
+            className="small-btn"
+            onClick={handleNextPage}
+            disabled={directors.length < 200}
+          >
             Next
           </button>
         </div>
@@ -57,4 +75,3 @@ export default function DirectorsList() {
     </section>
   );
 }
-

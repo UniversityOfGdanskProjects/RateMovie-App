@@ -2,7 +2,7 @@
 import React, { useContext, useEffect } from "react";
 import Link from "next/link";
 import { FaHeart } from "react-icons/fa6";
-import { TbEye, TbBell, TbUser, TbStar, TbMessage } from "react-icons/tb";
+import { TbEye, TbUser, TbStar, TbMessage } from "react-icons/tb";
 import { AiOutlineStop } from "react-icons/ai";
 import { UserContext } from "@/context/userContextProvider";
 import { useRouter } from "next/navigation";
@@ -26,11 +26,6 @@ export default function ProfileLayout({ children }) {
               <Link href="/profile">
                 <button className="big-btn">
                   Profile <TbUser className="text-xl" />
-                </button>
-              </Link>
-              <Link href="/profile/followed">
-                <button className="big-btn">
-                  Notifications <TbBell className="text-xl" />
                 </button>
               </Link>
               <Link href="/profile/watchlist">
