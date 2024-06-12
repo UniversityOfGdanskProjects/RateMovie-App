@@ -1,1 +1,0 @@
-self.__NEXT_FONT_MANIFEST="{\"pages\":{},\"app\":{\"/home/agata/nauka/projektprogramistyczny-abartczak01/frontend/app/layout\":[\"static/media/9919cdaa7472f3f1-s.p.woff2\"]},\"appUsingSizeAdjust\":true,\"pagesUsingSizeAdjust\":false}"
