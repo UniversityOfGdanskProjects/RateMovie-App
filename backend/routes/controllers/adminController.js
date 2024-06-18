@@ -1,6 +1,8 @@
 import bcrypt from "bcrypt";
 import driver from "../../db/neo4jDriver.js";
 import { v4 as uuidv4 } from "uuid";
+import axios from "axios";
+import qs from "qs";
 
 import {
   isValidEmail,
@@ -8,7 +10,7 @@ import {
   isValidPassword,
   isValidateCommentReview,
 } from "../../helpers/validation.js";
-import { authenticateAdmin, generateToken } from "../../middleware/auth.js";
+// import { authenticateAdmin, generateToken } from "../../middleware/auth.js";
 import { checkNodeExistence } from "../../helpers/checkExistence.js";
 // import {
 //   removeMovieFromAction,
@@ -17,8 +19,8 @@ import { checkNodeExistence } from "../../helpers/checkExistence.js";
 import { registerUser } from "./usersController.js";
 import { commentMovie } from "./userDataController.js";
 import { config } from "dotenv";
-
 config();
+
 const { JWT_SECRET, ADMIN_SECRET, TMDB_API_KEY } = process.env;
 
 export const registerAdmin = async (req, res) => {
@@ -84,48 +86,80 @@ export const registerAdmin = async (req, res) => {
 
 export const loginAdmin = async (req, res) => {
   const { username, password } = req.body;
-  const session = driver.session();
-
+  console.log(username, password);
   try {
-    const userResult = await session.run(
-      "MATCH (user:User {username: $username, isAdmin: true}) RETURN user",
-      { username }
+    const response = await axios.post(
+      `${process.env.KEYCLOAK_URL}/realms/${process.env.KEYCLOAK_REALM}/protocol/openid-connect/token`,
+      qs.stringify({
+        client_id: process.env.KEYCLOAK_CLIENT,
+        grant_type: "password",
+        username,
+        password,
+      }),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      }
     );
 
-    if (userResult.records.length === 0) {
-      res.status(401).json({ error: "Invalid username or password" });
-      return;
-    }
-
-    const storedHashedPassword =
-      userResult.records[0].get("user").properties.password;
-
-    const passwordMatch = await bcrypt.compare(password, storedHashedPassword);
-
-    if (!passwordMatch) {
-      res.status(401).json({ error: "Invalid username or password" });
-      return;
-    }
-
-    const userId = userResult.records[0].get("user").properties.userId;
-    const token = generateToken(userId, true);
+    const { access_token, refresh_token } = response.data;
 
     res.status(200).json({
       message: "Login successful",
-      token: token,
-      user: {
-        isAdmin: userResult.records[0].get("user").properties.isAdmin,
-        username: userResult.records[0].get("user").properties.username,
-        id: userResult.records[0].get("user").properties.userId,
-      },
+      token: access_token,
+      refreshToken: refresh_token,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
-  } finally {
-    await session.close();
+    res.status(401).json({ error: "Invalid username or password" });
   }
 };
+
+// export const loginAdmin = async (req, res) => {
+//   const { username, password } = req.body;
+//   const session = driver.session();
+
+//   try {
+//     const userResult = await session.run(
+//       "MATCH (user:User {username: $username, isAdmin: true}) RETURN user",
+//       { username }
+//     );
+
+//     if (userResult.records.length === 0) {
+//       res.status(401).json({ error: "Invalid username or password" });
+//       return;
+//     }
+
+//     const storedHashedPassword =
+//       userResult.records[0].get("user").properties.password;
+
+//     const passwordMatch = await bcrypt.compare(password, storedHashedPassword);
+
+//     if (!passwordMatch) {
+//       res.status(401).json({ error: "Invalid username or password" });
+//       return;
+//     }
+
+//     const userId = userResult.records[0].get("user").properties.userId;
+//     // const token = generateToken(userId, true);
+
+//     res.status(200).json({
+//       message: "Login successful",
+//       // token: token,
+//       user: {
+//         isAdmin: userResult.records[0].get("user").properties.isAdmin,
+//         username: userResult.records[0].get("user").properties.username,
+//         id: userResult.records[0].get("user").properties.userId,
+//       },
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: "Internal Server Error" });
+//   } finally {
+//     await session.close();
+//   }
+// };
 
 export const getUserById = async (req, res) => {
   const { userId } = req.query;

@@ -1,9 +1,9 @@
 "use client";
 import React, { useContext, useEffect, useState } from "react";
-import { UserContext } from "@/context/userContextProvider";
+// import { UserContext } from "@/context/userContextProvider";
 
 export default function ProfilePage() {
-  const { user } = useContext(UserContext);
+  // const { user } = useContext(UserContext);
   const [message, setMessage] = useState("");
   const [quote, setQuote] = useState(null);
 

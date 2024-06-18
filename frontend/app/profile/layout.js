@@ -12,6 +12,7 @@ export default function ProfileLayout({ children }) {
   const router = useRouter();
   useEffect(() => {
     if (!user) {
+      console.log("wybombiaj niunia");
       router.push("/");
       return;
     }

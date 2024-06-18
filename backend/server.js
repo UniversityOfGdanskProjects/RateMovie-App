@@ -7,13 +7,15 @@ import adminRoutes from "./routes/adminRoutes.js";
 import rankingRoutes from "./routes/rankingRoutes.js";
 import sseRoutes from "./routes/sseRoutes.js";
 import { config } from "dotenv";
-config();
+import keycloak from "./middleware/keycloak.js";
 
+config();
 const app = express();
-const port = 7000;
+const port = process.env.SERVER_PORT;
 
 app.use(express.json());
 app.use(cors());
+app.use(keycloak.middleware());
 
 app.use(moviesRoutes);
 app.use(usersRoutes);

@@ -26,7 +26,6 @@ export const checkRelationshipExistence = async (
 
 export const checkNodeExistence = async (session, label, property, value) => {
   const query = `MATCH (n:${label} {${property}: $value}) RETURN n`;
-
   const result = await session.readTransaction((tx) =>
     tx.run(query, { value })
   );

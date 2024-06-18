@@ -11,9 +11,7 @@ export default function RegisterForm({ isForAdmin }) {
   const registerUser = async (values, formik) => {
     console.log(values);
     try {
-      const url = isForAdmin
-        ? `${process.env.NEXT_PUBLIC_API_URL}admin/register`
-        : `${process.env.NEXT_PUBLIC_API_URL}users/register`;
+      const url = `${process.env.NEXT_PUBLIC_API_URL}users/register`;
       const response = await fetch(url, {
         method: "POST",
         headers: {
@@ -22,7 +20,7 @@ export default function RegisterForm({ isForAdmin }) {
         body: JSON.stringify(values),
       });
 
-      if (response.status === 400) {
+      if (response.status !== 201) {
         const data = await response.json();
         setRegisterError(data.error);
         return;
