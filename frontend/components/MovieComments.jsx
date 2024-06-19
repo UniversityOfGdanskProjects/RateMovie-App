@@ -72,7 +72,6 @@ const MovieComments = ({ movieId }) => {
         );
         const data = await response.json();
         if (response.ok) {
-          // console.log("złapane komentarze", data);
           setComments(data);
         } else {
           setMsg(data.error);

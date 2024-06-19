@@ -1,12 +1,10 @@
 "use client";
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import EditMovieForm from "@/components/EditMovieForm";
-import { UserContext } from "@/context/userContextProvider";
 
 export default function EditDeleteMovie() {
-  const { user } = useContext(UserContext);
   const [movieId, setMovieId] = useState(null);
   const [movie, setMovie] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");

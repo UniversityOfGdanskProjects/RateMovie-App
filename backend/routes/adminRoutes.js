@@ -3,7 +3,7 @@ import {
   // registerAdmin,
   // loginAdmin,
   deleteUser,
-  // editUser,
+  editUser,
   // addUser,
   // addMovieToFavourites,
   // addMovieToIgnored,
@@ -23,6 +23,7 @@ import {
   removeMovie,
   editMovie,
   addMovieFromTMDB,
+  getUsersByUsername,
   getUserById,
 } from "./controllers/adminController.js";
 
@@ -37,16 +38,18 @@ adminRoutes.delete(
   [keycloak.protect(), extractToken, checkIfAdmin],
   deleteUser
 );
-// adminRoutes.patch(
-//   "/api/admin/editUser",
-//   [keycloak.protect(), extractToken, checkIfAdmin],
-//   editUser
-// );
-// adminRoutes.post(
-//   "/api/admin/addUser",
-//   [keycloak.protect(), extractToken, checkIfAdmin],
-//   addUser
-// );
+adminRoutes.patch(
+  "/api/admin/editUser",
+  [keycloak.protect(), extractToken, checkIfAdmin],
+  editUser
+);
+
+adminRoutes.get(
+  "/api/admin/getUsers",
+  [keycloak.protect(), extractToken, checkIfAdmin],
+  getUsersByUsername
+);
+
 adminRoutes.get(
   "/api/admin/getUser",
   [keycloak.protect(), extractToken, checkIfAdmin],

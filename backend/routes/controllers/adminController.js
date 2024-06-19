@@ -25,22 +25,29 @@ config();
 
 const { TMDB_API_KEY } = process.env;
 
-export const getUserById = async (req, res) => {
-  const { userId } = req.query;
+export const getUsersByUsername = async (req, res) => {
+  const { username } = req.query;
 
   try {
     const token = await getKeycloakAdminToken();
-    console.log("tu token", token);
-    const url = `${process.env.KEYCLOAK_URL}/admin/realms/${process.env.KEYCLOAK_REALM}/users/${userId}`;
+    // console.log("tu token", token);
+    // const url = `${process.env.KEYCLOAK_URL}/admin/realms/${process.env.KEYCLOAK_REALM}/users/${userId}`;
+    const url = `${process.env.KEYCLOAK_URL}/admin/realms/${process.env.KEYCLOAK_REALM}/users?username=${username}`;
     const response = await axios.get(url, {
       headers: {
         Authorization: `Bearer ${token}`,
+        "Content-Type": "application/x-www-form-urlencoded",
       },
     });
 
-    const user = response.data;
-    console.log(user);
-    res.status(200).json({ user });
+    const users = response.data;
+    // const user = users[0];
+    console.log(users);
+    if (users) {
+      res.status(200).json({ users });
+    } else {
+      res.status(404).json({ message: "User not found" });
+    }
   } catch (error) {
     console.error(error);
     if (error.response && error.response.status === 404) {
@@ -48,6 +55,116 @@ export const getUserById = async (req, res) => {
     } else {
       res.status(500).json({ error: "Internal Server Error" });
     }
+  }
+};
+
+export const getUserById = async (req, res) => {
+  const { userId } = req.query;
+
+  try {
+    const token = await getKeycloakAdminToken();
+    // console.log("tu token", token);
+    const url = `${process.env.KEYCLOAK_URL}/admin/realms/${process.env.KEYCLOAK_REALM}/users/${userId}`;
+    // const url = `${process.env.KEYCLOAK_URL}/admin/realms/${process.env.KEYCLOAK_REALM}/users/`;
+    const response = await axios.get(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    });
+
+    const user = response.data;
+    // const user = users[0];
+    console.log(user);
+    if (user) {
+      res.status(200).json({ user });
+    } else {
+      res.status(404).json({ message: "User not found" });
+    }
+  } catch (error) {
+    console.error(error);
+    if (error.response && error.response.status === 404) {
+      res.status(404).json({ error: "User not found" });
+    } else {
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
+};
+
+export const deleteUser = async (req, res) => {
+  const { userId } = req.query;
+  const token = await getKeycloakAdminToken();
+  const session = driver.session();
+  console.log(userId, "usuwamy");
+
+  try {
+    await session.run(
+      "MATCH (user:User {userId: $userId}) DETACH DELETE user",
+      { userId }
+    );
+
+    const url = `${process.env.KEYCLOAK_URL}/admin/realms/${process.env.KEYCLOAK_REALM}/users/${userId}`;
+    const response = await axios.delete(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    });
+
+    res.status(200).json({ message: "User deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  } finally {
+    await session.close();
+  }
+};
+
+export const editUser = async (req, res) => {
+  const { userId, username, email, password } = req.body;
+  console.log(username, email, userId);
+  const token = await getKeycloakAdminToken();
+  const userRepresentation = {};
+
+  if (username) {
+    userRepresentation.username = username;
+  }
+
+  if (email) {
+    userRepresentation.email = email;
+  }
+
+  if (password) {
+    userRepresentation.credentials = [
+      {
+        type: "password",
+        value: password,
+        temporary: false,
+      },
+    ];
+  }
+
+  const url = `${process.env.KEYCLOAK_URL}/admin/realms/${process.env.KEYCLOAK_REALM}/users/${userId}`;
+
+  // PUT /admin/realms/{realm}/users/{id}
+  // Update the user
+  try {
+    const response = await axios.put(url, userRepresentation, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    const updatedUser = "twoja stara";
+
+    res
+      .status(200)
+      .json({ message: "User updated successfully", user: updatedUser });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  } finally {
   }
 };
 
@@ -81,97 +198,39 @@ export const getUserById = async (req, res) => {
 //   // });
 // };
 
-export const deleteUser = async (req, res) => {
-  const { userId } = req.query;
+// export const deleteUser = async (req, res) => {
+//   const { userId } = req.query;
 
-  // authenticateAdmin(req, res, async () => {
-  const session = driver.session();
+//   // authenticateAdmin(req, res, async () => {
+//   const session = driver.session();
 
-  try {
-    const userExists = await checkNodeExistence(
-      session,
-      "User",
-      "userId",
-      userId
-    );
+//   try {
+//     const userExists = await checkNodeExistence(
+//       session,
+//       "User",
+//       "userId",
+//       userId
+//     );
 
-    if (!userExists) {
-      res.status(404).json({ error: "User not found" });
-      return;
-    }
+//     if (!userExists) {
+//       res.status(404).json({ error: "User not found" });
+//       return;
+//     }
 
-    await session.run(
-      "MATCH (user:User {userId: $userId}) DETACH DELETE user",
-      { userId }
-    );
+//     await session.run(
+//       "MATCH (user:User {userId: $userId}) DETACH DELETE user",
+//       { userId }
+//     );
 
-    res.status(200).json({ message: "User deleted successfully" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
-  } finally {
-    await session.close();
-  }
-  // });
-};
-
-export const editUser = async (req, res) => {
-  const { userId, username, email, password } = req.body;
-
-  // authenticateAdmin(req, res, async () => {
-  const session = driver.session();
-
-  try {
-    const userExists = await checkNodeExistence(
-      session,
-      "User",
-      "userId",
-      userId
-    );
-
-    if (!userExists) {
-      res.status(404).json({ error: "User not found" });
-      return;
-    }
-
-    const queryParams = { userId };
-    const setClauses = [];
-
-    if (username && isValidUsername(username)) {
-      setClauses.push("user.username = $newUsername");
-      queryParams["newUsername"] = username;
-    }
-    if (email && isValidEmail(email)) {
-      setClauses.push("user.email = $newEmail");
-      queryParams["newEmail"] = email;
-    }
-    if (password && isValidPassword(password)) {
-      setClauses.push("user.password = $newPassword");
-      const hashedPassword = await bcrypt.hash(password, 10);
-      queryParams["newPassword"] = hashedPassword;
-    }
-
-    const query = `
-                MATCH (user:User {userId: $userId})
-                SET ${setClauses.join(", ")}
-                RETURN user
-            `;
-
-    const result = await session.run(query, queryParams);
-
-    const updatedUser = result.records[0].get("user").properties;
-
-    res
-      .status(200)
-      .json({ message: "User updated successfully", user: updatedUser });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
-  } finally {
-    await session.close();
-  }
-  // });
-};
+//     res.status(200).json({ message: "User deleted successfully" });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: "Internal Server Error" });
+//   } finally {
+//     await session.close();
+//   }
+//   // });
+// };
 
 // export const addUser = async (req, res) => {
 //   await authenticateAdmin(req, res, async () => {

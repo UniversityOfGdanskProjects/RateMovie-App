@@ -3,7 +3,7 @@ import React, { useState, useContext, useEffect } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { UserContext } from "@/context/userContextProvider";
-import RegisterForm from "@/components/RegisterForm";
+import UserSearch from "@/components/UserSearch";
 
 export default function ManageUsersPage() {
   const { user } = useContext(UserContext);
@@ -52,8 +52,9 @@ export default function ManageUsersPage() {
         "Password must be at least 8 characters long, cannot contain whitespaces, has to contain one lowercase letter, one uppercase letter, one number, and one special character"
       ),
     }),
-    onSubmit: (values) => {
+    onSubmit: (values, { resetForm }) => {
       handlePasswordChange(values);
+      resetForm();
     },
   });
 
@@ -69,7 +70,7 @@ export default function ManageUsersPage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            userId,
+            userId: userData.id,
             password: values.newPassword,
           }),
         }
@@ -85,42 +86,9 @@ export default function ManageUsersPage() {
     }
   };
 
-  const handleSearchUser = async () => {
-    setMsg("searching...");
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}admin/getUser?userId=${userId}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${user.token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setUserData(data.user);
-        formik.setValues({
-          userId: data.user.userId,
-          username: data.user.username,
-          email: data.user.email,
-        });
-        setMsg("user found");
-      } else if (response.status === 404) {
-        setUserData(null);
-        setMsg("User not found");
-      } else {
-        setMsg("Error fetching user data");
-      }
-    } catch (error) {
-      setMsg("Error fetching user data", error);
-    }
-  };
-
   const handleEditUser = async (updatedUserData) => {
     setMsg("updating user...");
+    console.log("edycja");
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}admin/editUser`,
@@ -131,7 +99,7 @@ export default function ManageUsersPage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            userId,
+            userId: userData.id,
             ...updatedUserData,
           }),
         }
@@ -151,9 +119,10 @@ export default function ManageUsersPage() {
 
   const handleDeleteUser = async () => {
     setMsg("deleting...");
+    console.log(userData.id);
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}admin/deleteUser?userId=${userId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}admin/deleteUser?userId=${userData.id}`,
         {
           method: "DELETE",
           headers: {
@@ -178,29 +147,24 @@ export default function ManageUsersPage() {
     }
   };
 
+  const handleUserSelect = (user) => {
+    setUserData(user);
+    formik.setValues({
+      userId: user.id,
+      username: user.username,
+      email: user.email,
+    });
+    setMsg("");
+  };
+
   return (
     <section className="flex flex-col gap-3 p-3">
+      <UserSearch onUserSelect={handleUserSelect} />
       {msg && <p className="msg">{msg}</p>}
-      <div className="form">
-        <h1>Find User</h1>
-        <label>
-          User ID:
-          <input
-            type="text"
-            value={userId}
-            onChange={(e) => setUserId(e.target.value)}
-          />
-        </label>
-        <div className="buttons">
-          <button className="small-btn" onClick={handleSearchUser}>
-            Search
-          </button>
-        </div>
-      </div>
       {userData && (
         <>
           <form className="form" onSubmit={formik.handleSubmit}>
-            <h2>User Details</h2>
+            <h2>Change User Details</h2>
             <label>
               Username:
               <input
