@@ -18,14 +18,16 @@ export default function EditDeleteMovie() {
     validationSchema: Yup.object({
       searchMovieId: Yup.string().required("Required"),
     }),
-    onSubmit: (values) => {
+    onSubmit: async (values, { resetForm }) => {
       setMovieId(values.searchMovieId);
+      resetForm();
     },
   });
 
   useEffect(() => {
     const fetchMovieDetails = async () => {
       try {
+        console.log(movieId);
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}movie/${movieId}`,
           {
@@ -41,6 +43,7 @@ export default function EditDeleteMovie() {
           setErrorMessage(data.error || "Failed to fetch movie details");
           setMovie(null);
         } else {
+          console.log(data);
           setErrorMessage("");
           setMovie(data);
         }

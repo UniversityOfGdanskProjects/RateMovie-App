@@ -11,6 +11,10 @@ const EditMovieForm = ({ movie, setMovie }) => {
   const [errorMessage, setErrorMessage] = useState("");
   const { user } = useContext(UserContext);
 
+  useEffect(() => {
+    console.log(movie.title);
+  });
+
   const handleDeleteMovie = async () => {
     try {
       setErrorMessage("Deleting movie...");
@@ -20,7 +24,7 @@ const EditMovieForm = ({ movie, setMovie }) => {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
-            // Authorization: `Bearer ${user.token}`,
+            Authorization: `Bearer ${user.token}`,
           },
           body: JSON.stringify({ movieId: String(movie.id) }),
         }
@@ -48,25 +52,25 @@ const EditMovieForm = ({ movie, setMovie }) => {
           <h2 className="msg">Movie ID: {movie.id}</h2>
           <Formik
             initialValues={{
-              runtime: movie?.runtime || 0,
-              budget: movie?.budget || 0,
-              tagline: movie?.tagline || "",
-              poster_path: movie?.poster_path || "",
-              release_date: movie?.release_date || "",
-              overview: movie?.overview || "",
-              original_language: movie?.original_language || "",
-              original_title: movie?.original_title || "",
-              title: movie?.title || "",
-              backdrop_path: movie?.backdrop_path || "",
-              images: movie?.images || [],
-              trailers: movie?.trailers || [],
-              genres: movie?.genres?.map((el) => el.id) || [],
+              runtime: movie.runtime || 0,
+              budget: movie.budget || 0,
+              tagline: movie.tagline || "",
+              poster_path: movie.poster_path || "",
+              release_date: movie.release_date || "",
+              overview: movie.overview || "",
+              original_language: movie.original_language || "",
+              original_title: movie.original_title || "",
+              title: movie.title || "",
+              backdrop_path: movie.backdrop_path || "",
+              images: movie.images || [],
+              trailers: movie.trailers || [],
+              genres: movie.genres.map((el) => el.name) || [],
               actors:
-                movie?.actors?.map((el) => ({
+                movie.actors.map((el) => ({
                   id: el.id,
                   character: el.character,
                 })) || [],
-              directors: movie?.directors?.map((el) => el.id) || [],
+              directors: movie.directors.map((el) => el.id) || [],
             }}
             validationSchema={Yup.object({
               runtime: Yup.number()
@@ -176,6 +180,7 @@ const EditMovieForm = ({ movie, setMovie }) => {
                 .min(1, "At least one director is required"),
             })}
             onSubmit={async (values) => {
+              console.log("please please please let me");
               try {
                 setErrorMessage("submiting...");
                 console.log("z edita");
@@ -185,13 +190,13 @@ const EditMovieForm = ({ movie, setMovie }) => {
                     method: "PATCH",
                     headers: {
                       "Content-Type": "application/json",
-                      // Authorization: `Bearer ${user.token}`,
+                      Authorization: `Bearer ${user.token}`,
                     },
                     body: JSON.stringify(values),
                   }
                 );
 
-                console.log(response);
+                console.log("edytujemy?", response);
 
                 if (!response.ok) {
                   const data = await response.json();
@@ -332,11 +337,7 @@ const EditMovieForm = ({ movie, setMovie }) => {
                 {useRenderFieldArray("directors", values)}
                 <label>Actors:</label>
                 {useRenderDoubleFieldArray("actors", values)}
-                <button
-                  type="submit"
-                  onClick={() => console.log(values)}
-                  className="big-btn"
-                >
+                <button type="submit" className="big-btn">
                   Save Changes
                 </button>
                 {movie && (

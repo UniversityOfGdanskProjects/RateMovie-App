@@ -4,6 +4,8 @@ import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
 import qs from "qs";
 
+import getKeycloakAdminToken from "../../middleware/getKeycloakAdminToken.js";
+
 import {
   isValidEmail,
   isValidUsername,
@@ -21,175 +23,63 @@ import { commentMovie } from "./userDataController.js";
 import { config } from "dotenv";
 config();
 
-const { JWT_SECRET, ADMIN_SECRET, TMDB_API_KEY } = process.env;
+const { TMDB_API_KEY } = process.env;
 
-export const registerAdmin = async (req, res) => {
-  const { username, email, password, adminSecret } = req.body;
-  const session = driver.session();
-
-  if (adminSecret !== ADMIN_SECRET) {
-    res.status(401).json({ error: "Unauthorized" });
-    return;
-  }
-
-  if (
-    !isValidEmail(email) ||
-    !isValidUsername(username) ||
-    !isValidPassword(password)
-  ) {
-    res.status(400).json({ error: "Invalid input format" });
-    return;
-  }
+export const getUserById = async (req, res) => {
+  const { userId } = req.query;
 
   try {
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const emailExists = await checkNodeExistence(
-      session,
-      "User",
-      "email",
-      email
-    );
-    if (emailExists) {
-      res.status(400).json({ error: "Email is already registered" });
-      return;
-    }
-
-    const usernameExists = await checkNodeExistence(
-      session,
-      "User",
-      "username",
-      username
-    );
-    if (usernameExists) {
-      res.status(400).json({ error: "Username is already taken" });
-      return;
-    }
-
-    const result = await session.run(
-      "CREATE (user:User {userId: $userId, username: $username, email: $email, password: $password, isAdmin: true}) RETURN user",
-      { userId: uuidv4(), username, email, password: hashedPassword }
-    );
-
-    const newUser = result.records[0].get("user").properties;
-
-    res
-      .status(201)
-      .json({ message: "Admin registered successfully", user: newUser });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
-  } finally {
-    await session.close();
-  }
-};
-
-export const loginAdmin = async (req, res) => {
-  const { username, password } = req.body;
-  console.log(username, password);
-  try {
-    const response = await axios.post(
-      `${process.env.KEYCLOAK_URL}/realms/${process.env.KEYCLOAK_REALM}/protocol/openid-connect/token`,
-      qs.stringify({
-        client_id: process.env.KEYCLOAK_CLIENT,
-        grant_type: "password",
-        username,
-        password,
-      }),
-      {
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-      }
-    );
-
-    const { access_token, refresh_token } = response.data;
-
-    res.status(200).json({
-      message: "Login successful",
-      token: access_token,
-      refreshToken: refresh_token,
+    const token = await getKeycloakAdminToken();
+    console.log("tu token", token);
+    const url = `${process.env.KEYCLOAK_URL}/admin/realms/${process.env.KEYCLOAK_REALM}/users/${userId}`;
+    const response = await axios.get(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
+
+    const user = response.data;
+    console.log(user);
+    res.status(200).json({ user });
   } catch (error) {
     console.error(error);
-    res.status(401).json({ error: "Invalid username or password" });
+    if (error.response && error.response.status === 404) {
+      res.status(404).json({ error: "User not found" });
+    } else {
+      res.status(500).json({ error: "Internal Server Error" });
+    }
   }
 };
 
-// export const loginAdmin = async (req, res) => {
-//   const { username, password } = req.body;
+// export const getUserById = async (req, res) => {
+//   const { userId } = req.query;
+//   // authenticateAdmin(req, res, async () => {
 //   const session = driver.session();
 
 //   try {
-//     const userResult = await session.run(
-//       "MATCH (user:User {username: $username, isAdmin: true}) RETURN user",
-//       { username }
-//     );
+//     const result = await session.executeRead(async (tx) => {
+//       const queryResult = await tx.run(
+//         "MATCH (user:User {userId: $userId}) RETURN user",
+//         { userId }
+//       );
 
-//     if (userResult.records.length === 0) {
-//       res.status(401).json({ error: "Invalid username or password" });
-//       return;
-//     }
-
-//     const storedHashedPassword =
-//       userResult.records[0].get("user").properties.password;
-
-//     const passwordMatch = await bcrypt.compare(password, storedHashedPassword);
-
-//     if (!passwordMatch) {
-//       res.status(401).json({ error: "Invalid username or password" });
-//       return;
-//     }
-
-//     const userId = userResult.records[0].get("user").properties.userId;
-//     // const token = generateToken(userId, true);
-
-//     res.status(200).json({
-//       message: "Login successful",
-//       // token: token,
-//       user: {
-//         isAdmin: userResult.records[0].get("user").properties.isAdmin,
-//         username: userResult.records[0].get("user").properties.username,
-//         id: userResult.records[0].get("user").properties.userId,
-//       },
+//       const user = queryResult.records[0]?.get("user").properties;
+//       return user;
 //     });
+
+//     if (result) {
+//       res.status(200).json({ user: result });
+//     } else {
+//       res.status(404).json({ error: "User not found" });
+//     }
 //   } catch (error) {
 //     console.error(error);
 //     res.status(500).json({ error: "Internal Server Error" });
 //   } finally {
 //     await session.close();
 //   }
+//   // });
 // };
-
-export const getUserById = async (req, res) => {
-  const { userId } = req.query;
-  // authenticateAdmin(req, res, async () => {
-  const session = driver.session();
-
-  try {
-    const result = await session.executeRead(async (tx) => {
-      const queryResult = await tx.run(
-        "MATCH (user:User {userId: $userId}) RETURN user",
-        { userId }
-      );
-
-      const user = queryResult.records[0]?.get("user").properties;
-      return user;
-    });
-
-    if (result) {
-      res.status(200).json({ user: result });
-    } else {
-      res.status(404).json({ error: "User not found" });
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
-  } finally {
-    await session.close();
-  }
-  // });
-};
 
 export const deleteUser = async (req, res) => {
   const { userId } = req.query;
@@ -283,11 +173,11 @@ export const editUser = async (req, res) => {
   // });
 };
 
-export const addUser = async (req, res) => {
-  await authenticateAdmin(req, res, async () => {
-    registerUser(req, res);
-  });
-};
+// export const addUser = async (req, res) => {
+//   await authenticateAdmin(req, res, async () => {
+//     registerUser(req, res);
+//   });
+// };
 
 // export const addMovieToFavourites = async (req, res) => {
 //   await authenticateAdmin(req, res, async () => {
@@ -611,6 +501,7 @@ export const removeMovie = async (req, res) => {
 
 export const editMovie = async (req, res) => {
   const session = driver.session();
+  console.log("będziemy edytwoać");
 
   // await authenticateAdmin(req, res, async () => {
   try {
@@ -750,7 +641,7 @@ export const editMovie = async (req, res) => {
         );
       }
     }
-
+    // console.log(editedMovieNode.properties);
     res.status(200).json({
       message: "Movie edited successfully",
       movie: editedMovieNode.properties,

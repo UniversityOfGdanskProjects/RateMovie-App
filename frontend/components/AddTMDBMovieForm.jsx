@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { UserContext } from "@/context/userContextProvider";
@@ -12,10 +12,10 @@ export default function AddTMDBMovieForm() {
       movieId: "",
     },
     validationSchema: Yup.object({
-      movieId: Yup.string().required("movie is is required"),
+      movieId: Yup.string().required("Movie ID is required"),
     }),
     onSubmit: async (values) => {
-      setMsg("adding...");
+      setMsg("Adding...");
       try {
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}admin/addMovieFromTMDB`,
@@ -28,15 +28,17 @@ export default function AddTMDBMovieForm() {
             body: JSON.stringify({ movieId: values.movieId }),
           }
         );
-        formik.resetForm();
 
-        const data = await response.json();
+        const data = await response.text(); // Użycie response.text() do debugowania odpowiedzi
+        console.log("Response data:", data); // Logowanie odpowiedzi z serwera
 
         if (!response.ok) {
-          setMsg(data.error);
+          setMsg(data);
           return;
         } else {
-          setMsg("succesfuly added movie: " + data.movie.title);
+          const jsonData = JSON.parse(data); // Parsowanie JSON w przypadku powodzenia
+          setMsg("Successfully added movie: " + jsonData.movie.title);
+          formik.resetForm();
           return;
         }
       } catch (error) {

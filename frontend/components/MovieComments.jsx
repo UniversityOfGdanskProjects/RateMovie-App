@@ -9,10 +9,12 @@ const MovieComments = ({ movieId }) => {
   const [comments, setComments] = useState([]);
   const { user } = useContext(UserContext);
   const [msg, setMsg] = useState("");
+
   const editFormik = useFormik({
     initialValues: {
       comment: "",
       commentId: null,
+      username: "",
     },
     validationSchema: Yup.object({
       comment: Yup.string()
@@ -23,6 +25,8 @@ const MovieComments = ({ movieId }) => {
     }),
     onSubmit: async (values, { resetForm }) => {
       try {
+        console.log(values.commentId);
+        console.log(values.comment);
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}movies/comment`,
           {
@@ -33,6 +37,7 @@ const MovieComments = ({ movieId }) => {
             body: JSON.stringify({
               commentId: values.commentId,
               comment: values.comment,
+              username: values.username,
             }),
           }
         );
@@ -67,6 +72,7 @@ const MovieComments = ({ movieId }) => {
         );
         const data = await response.json();
         if (response.ok) {
+          // console.log("złapane komentarze", data);
           setComments(data);
         } else {
           setMsg(data.error);
@@ -102,14 +108,14 @@ const MovieComments = ({ movieId }) => {
             body: JSON.stringify({
               comment: values.comment,
               userId: user.id,
+              username: user.username,
             }),
           }
         );
-
         const data = await response.json();
         if (response.ok) {
-          setComments([...comments, { ...data, username: user.username }]);
           resetForm();
+          setComments([...comments, { ...data }]);
         } else {
           setMsg(data.error);
         }
@@ -145,9 +151,9 @@ const MovieComments = ({ movieId }) => {
     }
   };
 
-  const handleEditComment = (commentId, comment) => {
+  const handleEditComment = (commentId, comment, username) => {
     editingCommentIdRef.current = commentId;
-    editFormik.setValues({ commentId, comment });
+    editFormik.setValues({ commentId, comment, username });
   };
 
   const cancelEdit = () => {
@@ -174,24 +180,30 @@ const MovieComments = ({ movieId }) => {
                 <p>{comment.comment}</p>
                 <p className="date">{comment.date}</p>
               </div>
-              {user && (user.id === comment.userId || user.isAdmin) && (
-                <div className="comment-buttons">
-                  <button
-                    className=""
-                    onClick={() =>
-                      handleEditComment(comment.commentId, comment.comment)
-                    }
-                  >
-                    <MdEdit className="text-2xl" />
-                  </button>
-                  <button
-                    className=""
-                    onClick={() => handleDeleteComment(comment.commentId)}
-                  >
-                    <MdDeleteOutline className="text-2xl" />
-                  </button>
-                </div>
-              )}
+              {user &&
+                (user.id === comment.userId ||
+                  user.roles.includes("admin")) && (
+                  <div className="comment-buttons">
+                    <button
+                      className=""
+                      onClick={() =>
+                        handleEditComment(
+                          comment.commentId,
+                          comment.comment,
+                          comment.username
+                        )
+                      }
+                    >
+                      <MdEdit className="text-2xl" />
+                    </button>
+                    <button
+                      className=""
+                      onClick={() => handleDeleteComment(comment.commentId)}
+                    >
+                      <MdDeleteOutline className="text-2xl" />
+                    </button>
+                  </div>
+                )}
             </li>
           ))}
       </ul>

@@ -130,6 +130,7 @@ const AddMovieForm = () => {
         })}
         onSubmit={async (values) => {
           try {
+            console.log("próbuje ok");
             const response = await fetch(
               `${process.env.NEXT_PUBLIC_API_URL}admin/addMovie`,
               {
@@ -142,7 +143,7 @@ const AddMovieForm = () => {
               }
             );
 
-            console.log(response);
+            // console.log(response);
 
             if (!response.ok) {
               const data = await response.json();

@@ -6,18 +6,17 @@ import { useRouter } from "next/navigation";
 
 export default function ProfileLayout({ children }) {
   const { user } = useContext(UserContext);
-
   const router = useRouter();
+
   useEffect(() => {
-    if (!user || !user.isAdmin) {
-      router.push("/admin-sign-in");
-      return;
+    if (!user || !user.roles.includes("admin")) {
+      router.push("/");
     }
   });
 
   return (
     <>
-      {user && user.isAdmin && (
+      {user && user.roles.includes("admin") ? (
         <>
           <section>
             <nav className="bg-slate-700 flex flex-wrap p-2 gap-2 justify-center">
@@ -31,6 +30,14 @@ export default function ProfileLayout({ children }) {
           </section>
           {children}
         </>
+      ) : (
+        <section className="p-2">
+          <h1 className="p-2 font-bold">Access Denied</h1>
+          <p className="p-2">
+            You do not have the required permissions to view this page.
+          </p>
+          <p className="p-2">Redirecting to Home Page...</p>
+        </section>
       )}
     </>
   );

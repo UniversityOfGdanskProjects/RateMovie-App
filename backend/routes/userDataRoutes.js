@@ -3,23 +3,19 @@ import {
   getFavouriteMovies,
   getWatchlistMovies,
   getIgnoredMovies,
-  getFollowedMovies,
   getCommentedMovies,
   getReviewedMovies,
   getReviewByMovieAndUser,
   getFavouriteByMovieAndUser,
   getIgnoredByMovieAndUser,
-  getFollowedByMovieAndUser,
   getWathlistByMovieAndUser,
   rateMovie,
   commentMovie,
   addMovieToFavourites,
-  addMovieToFollowed,
   addMovieToIgnored,
   addMovieToWatchlist,
   removeMovieFromCommented,
   removeMovieFromFavourites,
-  removeMovieFromFollowed,
   removeMovieFromIgnored,
   removeMovieFromWatchlist,
   removeMovieFromReviewed,
@@ -32,7 +28,6 @@ const userDataRoutes = express.Router();
 userDataRoutes.get("/api/favourites/:userId", getFavouriteMovies);
 userDataRoutes.get("/api/watchlist/:userId", getWatchlistMovies);
 userDataRoutes.get("/api/ignored/:userId", getIgnoredMovies);
-userDataRoutes.get("/api/followed/:userId", getFollowedMovies);
 userDataRoutes.get("/api/commented/:userId", getCommentedMovies);
 userDataRoutes.get("/api/reviewed/:userId", getReviewedMovies);
 
@@ -42,7 +37,6 @@ userDataRoutes.get(
   getFavouriteByMovieAndUser
 );
 userDataRoutes.get("/api/ignored/:userId/:movieId", getIgnoredByMovieAndUser);
-userDataRoutes.get("/api/followed/:userId/:movieId", getFollowedByMovieAndUser);
 userDataRoutes.get(
   "/api/watchlist/:userId/:movieId",
   getWathlistByMovieAndUser
@@ -62,9 +56,6 @@ userDataRoutes
 userDataRoutes
   .route("/api/movies/:movieId/addToWatchlist")
   .post(addMovieToWatchlist);
-userDataRoutes
-  .route("/api/movies/:movieId/addToFollowed")
-  .post(addMovieToFollowed);
 
 userDataRoutes.delete(
   "/api/removeFromIgnored/:userId/:movieId",
@@ -74,10 +65,7 @@ userDataRoutes.delete(
   "/api/removeFromWatchlist/:userId/:movieId",
   removeMovieFromWatchlist
 );
-userDataRoutes.delete(
-  "/api/removeFromFollowed/:userId/:movieId",
-  removeMovieFromFollowed
-);
+
 userDataRoutes.delete(
   "/api/removeFromFavourites/:userId/:movieId",
   removeMovieFromFavourites

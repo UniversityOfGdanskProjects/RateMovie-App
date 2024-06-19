@@ -1,10 +1,10 @@
 import express from "express";
 import {
-  registerAdmin,
-  loginAdmin,
+  // registerAdmin,
+  // loginAdmin,
   deleteUser,
-  editUser,
-  addUser,
+  // editUser,
+  // addUser,
   // addMovieToFavourites,
   // addMovieToIgnored,
   // addMovieToWatchlist,
@@ -32,27 +32,21 @@ import checkIfAdmin from "../middleware/checkIfAdmin.js";
 
 const adminRoutes = express.Router();
 
-adminRoutes.post(
-  "/api/admin/register",
-  // [keycloak.protect(), extractToken, checkIfAdmin],
-  registerAdmin
-);
-
 adminRoutes.delete(
   "/api/admin/deleteUser",
   [keycloak.protect(), extractToken, checkIfAdmin],
   deleteUser
 );
-adminRoutes.patch(
-  "/api/admin/editUser",
-  [keycloak.protect(), extractToken, checkIfAdmin],
-  editUser
-);
-adminRoutes.post(
-  "/api/admin/addUser",
-  [keycloak.protect(), extractToken, checkIfAdmin],
-  addUser
-);
+// adminRoutes.patch(
+//   "/api/admin/editUser",
+//   [keycloak.protect(), extractToken, checkIfAdmin],
+//   editUser
+// );
+// adminRoutes.post(
+//   "/api/admin/addUser",
+//   [keycloak.protect(), extractToken, checkIfAdmin],
+//   addUser
+// );
 adminRoutes.get(
   "/api/admin/getUser",
   [keycloak.protect(), extractToken, checkIfAdmin],
@@ -95,8 +89,6 @@ adminRoutes.patch(
   [keycloak.protect(), extractToken, checkIfAdmin],
   editMovie
 );
-
-adminRoutes.route("/api/admin/login").post(loginAdmin);
 
 export default adminRoutes;
 

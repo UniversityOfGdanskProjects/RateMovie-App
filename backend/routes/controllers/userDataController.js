@@ -27,10 +27,6 @@ export const getIgnoredMovies = async (req, res) => {
   await getMoviesByRelation(req, res, "IGNORES");
 };
 
-export const getFollowedMovies = async (req, res) => {
-  await getMoviesByRelation(req, res, "FOLLOWED");
-};
-
 export const getCommentedMovies = async (req, res) => {
   await getMoviesByRelation(req, res, "COMMENTED");
 };
@@ -49,10 +45,6 @@ export const getFavouriteByMovieAndUser = async (req, res) => {
 
 export const getIgnoredByMovieAndUser = async (req, res) => {
   await getRelationByMovieAndUser(req, res, "IGNORES");
-};
-
-export const getFollowedByMovieAndUser = async (req, res) => {
-  await getRelationByMovieAndUser(req, res, "FOLLOWED");
 };
 
 export const getWathlistByMovieAndUser = async (req, res) => {
@@ -157,8 +149,10 @@ export const rateMovie = async (req, res) => {
 };
 
 export const commentMovie = async (req, res) => {
+  console.log("nowy komentarz");
   const movieId = req.params.movieId;
-  const { userId, comment } = req.body;
+  const { userId, comment, username } = req.body;
+  console.log(userId, comment, username);
 
   const session = driver.session();
 
@@ -192,7 +186,7 @@ export const commentMovie = async (req, res) => {
     const query = `
             MATCH (u:User {userId: $userId})
             MATCH (m:Movie {id: $movieId})
-            CREATE (u)-[r:COMMENTED {commentId: $commentId, comment: $comment, date: $date}]->(m)
+            CREATE (u)-[r:COMMENTED {commentId: $commentId, comment: $comment, date: $date, username: $username}]->(m)
             RETURN r
         `;
 
@@ -202,11 +196,13 @@ export const commentMovie = async (req, res) => {
         movieId,
         comment,
         commentId: uuidv4(),
+        username,
         date: new Date().toISOString().split("T")[0],
       })
     );
 
     const createdRelationship = result.records[0].get("r").properties;
+    console.log(createdRelationship);
     res.status(200).json(createdRelationship);
   } catch (error) {
     console.error(error);
@@ -239,7 +235,7 @@ export const deleteComment = async (req, res) => {
 };
 
 export const editComment = async (req, res) => {
-  const { commentId, comment } = req.body;
+  const { commentId, comment, username } = req.body;
   const session = driver.session();
 
   try {
@@ -248,9 +244,10 @@ export const editComment = async (req, res) => {
         `
         MATCH (u: User)-[r: COMMENTED {commentId: $commentId}]->(m: Movie)
         SET r.comment = $comment
+        SET r.username = $username
         RETURN r
         `,
-        { commentId, comment }
+        { commentId, comment, username }
       )
     );
     const editedComment = result.records[0].get("r").properties;
@@ -283,10 +280,6 @@ export const addMovieToWatchlist = async (req, res) => {
   await addMovieToAction(req, res, "ADDED_TO_WATCHLIST");
 };
 
-export const addMovieToFollowed = async (req, res) => {
-  await addMovieToAction(req, res, "FOLLOWED");
-};
-
 export const removeMovieFromFavourites = async (req, res) => {
   await removeMovieFromAction(req, res, "FAVOURITES");
 };
@@ -296,8 +289,4 @@ export const removeMovieFromIgnored = async (req, res) => {
 
 export const removeMovieFromWatchlist = async (req, res) => {
   await removeMovieFromAction(req, res, "ADDED_TO_WATCHLIST");
-};
-
-export const removeMovieFromFollowed = async (req, res) => {
-  await removeMovieFromAction(req, res, "FOLLOWED");
 };

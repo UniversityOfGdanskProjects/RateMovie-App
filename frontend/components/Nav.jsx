@@ -2,12 +2,20 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { TbSearch, TbUser, TbBell } from "react-icons/tb";
-import { useContext, useEffect, useState } from "react";
+import { TbSearch, TbUser } from "react-icons/tb";
+import { useContext } from "react";
 import { UserContext } from "@/context/userContextProvider";
 
 export default function Nav() {
-  const { user, setUser } = useContext(UserContext);
+  const { user, setUser, keycloak } = useContext(UserContext);
+  const handleLogout = () => {
+    // console.log("z nava", keycloak);
+    setUser(null);
+    if (keycloak) {
+      console.log("wylogowujemy sb");
+      keycloak.logout();
+    }
+  };
 
   return (
     <nav className="flex justify-between py-2 px-2 shadow-2xl">
@@ -23,14 +31,9 @@ export default function Nav() {
       </Link>
       <div className="flex gap-4 flex-center items-center">
         {!user && (
-          <>
-            <Link href="/login">
-              <button className="small-btn">Sign In</button>
-            </Link>
-            <Link href="/admin-sign-in">
-              <button className="small-btn">Sign In As Admin</button>
-            </Link>
-          </>
+          <Link href="/login">
+            <button className="small-btn">Sign In</button>
+          </Link>
         )}
         <Link href="/search">
           <button className="big-btn py-1 px-3 flex flex-center items-center gap-2">
@@ -53,13 +56,11 @@ export default function Nav() {
           </Link>
         )}
         {user && (
-          <Link href="/">
-            <button className="small-btn" onClick={() => setUser(null)}>
-              Sign Out
-            </button>
-          </Link>
+          <button className="small-btn" onClick={handleLogout}>
+            Sign Out
+          </button>
         )}
-        {user && user.isAdmin && (
+        {user && user.roles && user.roles.includes("admin") && (
           <Link href="/admin/manage-users">
             <button className="small-btn">Admin Panel</button>
           </Link>

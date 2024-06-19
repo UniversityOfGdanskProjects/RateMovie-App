@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { UserContext } from "@/context/userContextProvider";
@@ -10,6 +10,12 @@ export default function ManageUsersPage() {
   const [userId, setUserId] = useState("");
   const [userData, setUserData] = useState(null);
   const [msg, setMsg] = useState("");
+
+  useEffect(() => {
+    if (user && user.token) {
+      console.log(user.token);
+    }
+  });
 
   const formik = useFormik({
     initialValues: {
@@ -174,8 +180,6 @@ export default function ManageUsersPage() {
 
   return (
     <section className="flex flex-col gap-3 p-3">
-      <h1 className="msg">Add New User</h1>
-      <RegisterForm isForAdmin={false} />
       {msg && <p className="msg">{msg}</p>}
       <div className="form">
         <h1>Find User</h1>
