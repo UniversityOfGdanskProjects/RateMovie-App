@@ -66,22 +66,6 @@
     }
   }
 
-  .notifications-panel {
-    @apply flex flex-col gap-3 p-3 rounded-lg border-2 border-slate-700 border-solid mb-3;
-    .notification {
-      @apply bg-slate-600 p-3 rounded-lg shadow-2xl hover:bg-slate-700;
-      .comment {
-        @apply italic;
-      }
-    }
-  }
-  .chat {
-    @apply flex flex-col gap-3 p-3 rounded-lg border-2 border-slate-700 border-solid mb-3;
-    .chat-msg {
-      @apply bg-slate-700 p-3 rounded-lg shadow-2xl break-words;
-    }
-  }
-
   .comments {
     .comment {
       @apply my-2 border-2 border-slate-700 border-solid p-4 rounded-lg flex justify-between;
@@ -130,6 +114,37 @@
     .buttons {
       display: flex;
       gap: 0.5rem;
+      justify-content: flex-end;
+    }
+  }
+
+  .form-better {
+    @apply m-auto rounded-lg sm:w-full md:w-full lg:w-3/4 xl:w-2/3 p-3 bg-slate-700 shadow-xl;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    .fields {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      // background-color: red;
+      .field {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        label {
+          text-align: end;
+          // background-color: orange;
+          flex: 1;
+        }
+        input,
+        select {
+          flex: 2.5;
+        }
+      }
+    }
+    .buttons {
+      display: flex;
       justify-content: flex-end;
     }
   }

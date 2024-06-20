@@ -1,12 +1,25 @@
 "use client";
-import React, { useContext, useState, useMemo } from "react";
-import { RankingContext } from "@/context/rankingsProvider";
+import React, { useContext, useState, useMemo, useEffect } from "react";
+// import { RankingContext } from "@/context/rankingsProvider";
 import LoadingPage from "@/components/LoadingPage";
 import DetailedMovieCard from "@/components/DetailedMovieCard";
 
 export default function MoviesRankingPage() {
-  const { rankedMovies } = useContext(RankingContext);
+  //   const { rankedMovies } = useContext(RankingContext);
+  const [rankedMovies, setRankedMovies] = useState([]);
   const [visibleMovies, setVisibleMovies] = useState(10);
+
+  useEffect(() => {
+    console.log(process.env.NEXT_PUBLIC_API_URL);
+    const fetchMovies = async () => {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}ranking/movies`
+      );
+      const data = await response.json();
+      if (response.ok) setRankedMovies(data);
+    };
+    fetchMovies();
+  }, []);
 
   const visibleMoviesSlice = useMemo(
     () => rankedMovies.slice(0, visibleMovies),

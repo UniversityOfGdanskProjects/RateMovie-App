@@ -9,7 +9,6 @@ import { UserContext } from "@/context/userContextProvider";
 export default function Nav() {
   const { user, setUser, keycloak } = useContext(UserContext);
   const handleLogout = () => {
-    // console.log("z nava", keycloak);
     setUser(null);
     if (keycloak) {
       console.log("wylogowujemy sb");
@@ -41,14 +40,14 @@ export default function Nav() {
             <TbSearch />
           </button>
         </Link>
-        <Link href="/ranking/movies">
+        <Link href="/ranking">
           <button className="small-btn">Movies Ranking</button>
         </Link>
-        <Link href="/ranking/users">
-          <button className="small-btn">Users Ranking</button>
-        </Link>
         {user && (
-          <Link href="/profile" className="flex gap-2 flex-center items-center">
+          <Link
+            href="/profile/reviewed"
+            className="flex gap-2 flex-center items-center"
+          >
             <button className="small-btn">
               <p className="">Profile</p>
               <TbUser className="text-xl" />

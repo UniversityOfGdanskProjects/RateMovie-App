@@ -24,11 +24,16 @@ const UserSearch = ({ onUserSelect }) => {
 
       if (response.ok) {
         const data = await response.json();
-        setSearchResults(data.users);
-        setMsg("Users found");
+        console.log(data.users);
+        if (data.users.length !== 0) {
+          setSearchResults(data.users);
+          setMsg("Users found");
+        } else {
+          setMsg("User not found");
+        }
       } else if (response.status === 404) {
         setSearchResults([]);
-        setMsg("Users not found");
+        setMsg("User not found");
       } else {
         setMsg("Error fetching users");
       }

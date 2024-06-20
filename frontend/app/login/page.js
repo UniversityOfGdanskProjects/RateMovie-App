@@ -14,10 +14,10 @@ export default function LoginPage() {
   useEffect(() => {
     // if (isRun.current) return;
     // isRun.current = true;
-    console.log(token, "tutaj");
+    // console.log(token, "tutaj");
 
     if (token) {
-      console.log("tera tu", token);
+      // console.log("tera tu", token);
       const config = {
         headers: {
           Authorization: `Bearer ${token}`,
