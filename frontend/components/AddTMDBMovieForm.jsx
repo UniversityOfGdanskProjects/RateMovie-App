@@ -29,14 +29,14 @@ export default function AddTMDBMovieForm() {
           }
         );
 
-        const data = await response.text(); // Użycie response.text() do debugowania odpowiedzi
+        const data = await response.text();
         console.log("Response data:", data); // Logowanie odpowiedzi z serwera
 
         if (!response.ok) {
           setMsg(data);
           return;
         } else {
-          const jsonData = JSON.parse(data); // Parsowanie JSON w przypadku powodzenia
+          const jsonData = JSON.parse(data);
           setMsg("Successfully added movie: " + jsonData.movie.title);
           formik.resetForm();
           return;

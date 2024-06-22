@@ -35,7 +35,7 @@ export default function App() {
     fetchPopularMovies();
   }, [user]);
   return (
-    <section className="">
+    <section>
       <div className="backdrop-container mb-12">
         <div className="backdrop-info flex flex-col items-center">
           <h1 className="text-center text-4xl mb-4">

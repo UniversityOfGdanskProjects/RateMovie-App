@@ -24,7 +24,7 @@ export default function LoginPage() {
         },
       };
       const url = `${process.env.NEXT_PUBLIC_API_URL}users/register`;
-      console.log(url);
+      // console.log(url);
       axios
         .post(url, {}, config)
         .then((res) => {
@@ -35,8 +35,7 @@ export default function LoginPage() {
             token: token,
           });
           setKeycloak(ogKeycloak);
-          console.log("mój keycloak", ogKeycloak);
-          console.log(res.data);
+          // console.log(res.data);
           router.push("/");
         })
         .catch((err) => console.error(err));
@@ -59,18 +58,3 @@ export default function LoginPage() {
     </section>
   );
 }
-
-// export default function LoginPage() {
-//   return (
-//     <section className="p-3">
-//       <h1 className="msg">Login</h1>
-//       <LoginForm />
-//       <p className="text-center p-3">
-//         Doesn't have an account? Register down below!
-//       </p>
-//       <Link href="/register" className="my-2">
-//         <button className="big-btn m-auto">REGISTER</button>
-//       </Link>
-//     </section>
-//   );
-// }

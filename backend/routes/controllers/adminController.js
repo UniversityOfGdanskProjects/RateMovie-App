@@ -1,24 +1,11 @@
-import bcrypt from "bcrypt";
 import driver from "../../db/neo4jDriver.js";
 import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
-import qs from "qs";
 
 import getKeycloakAdminToken from "../../middleware/getKeycloakAdminToken.js";
 
-import {
-  isValidEmail,
-  isValidUsername,
-  isValidPassword,
-  isValidateCommentReview,
-} from "../../helpers/validation.js";
-// import { authenticateAdmin, generateToken } from "../../middleware/auth.js";
+import { isValidateCommentReview } from "../../helpers/validation.js";
 import { checkNodeExistence } from "../../helpers/checkExistence.js";
-// import {
-//   removeMovieFromAction,
-//   addMovieToAction,
-// } from "../../helpers/movieHelpers.js";
-import { registerUser } from "./usersController.js";
 import { commentMovie } from "./userDataController.js";
 import { config } from "dotenv";
 config();
@@ -27,7 +14,9 @@ const { TMDB_API_KEY } = process.env;
 
 export const getUsersByUsername = async (req, res) => {
   const { username } = req.query;
-
+  console.log(process.env.KEYCLOAK_REALM);
+  console.log(process.env.KEYCLOAK_URL);
+  console.log(process.env.KEYCLOAK_CLIENT);
   try {
     const token = await getKeycloakAdminToken();
     // console.log("tu token", token);
@@ -42,7 +31,7 @@ export const getUsersByUsername = async (req, res) => {
 
     const users = response.data;
     // const user = users[0];
-    console.log(users);
+    // console.log(users);
     if (users) {
       res.status(200).json({ users });
     } else {
@@ -168,126 +157,7 @@ export const editUser = async (req, res) => {
   }
 };
 
-// export const getUserById = async (req, res) => {
-//   const { userId } = req.query;
-//   // authenticateAdmin(req, res, async () => {
-//   const session = driver.session();
-
-//   try {
-//     const result = await session.executeRead(async (tx) => {
-//       const queryResult = await tx.run(
-//         "MATCH (user:User {userId: $userId}) RETURN user",
-//         { userId }
-//       );
-
-//       const user = queryResult.records[0]?.get("user").properties;
-//       return user;
-//     });
-
-//     if (result) {
-//       res.status(200).json({ user: result });
-//     } else {
-//       res.status(404).json({ error: "User not found" });
-//     }
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ error: "Internal Server Error" });
-//   } finally {
-//     await session.close();
-//   }
-//   // });
-// };
-
-// export const deleteUser = async (req, res) => {
-//   const { userId } = req.query;
-
-//   // authenticateAdmin(req, res, async () => {
-//   const session = driver.session();
-
-//   try {
-//     const userExists = await checkNodeExistence(
-//       session,
-//       "User",
-//       "userId",
-//       userId
-//     );
-
-//     if (!userExists) {
-//       res.status(404).json({ error: "User not found" });
-//       return;
-//     }
-
-//     await session.run(
-//       "MATCH (user:User {userId: $userId}) DETACH DELETE user",
-//       { userId }
-//     );
-
-//     res.status(200).json({ message: "User deleted successfully" });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ error: "Internal Server Error" });
-//   } finally {
-//     await session.close();
-//   }
-//   // });
-// };
-
-// export const addUser = async (req, res) => {
-//   await authenticateAdmin(req, res, async () => {
-//     registerUser(req, res);
-//   });
-// };
-
-// export const addMovieToFavourites = async (req, res) => {
-//   await authenticateAdmin(req, res, async () => {
-//     await addMovieToAction(req, res, "FAVOURITES");
-//   });
-// };
-
-// export const addMovieToIgnored = async (req, res) => {
-//   await authenticateAdmin(req, res, async () => {
-//     await addMovieToAction(req, res, "IGNORES");
-//   });
-// };
-
-// export const addMovieToWatchlist = async (req, res) => {
-//   await authenticateAdmin(req, res, async () => {
-//     await addMovieToAction(req, res, "ADDED_TO_WATCHLIST");
-//   });
-// };
-
-// export const addMovieToFollowed = async (req, res) => {
-//   await authenticateAdmin(req, res, async () => {
-//     await addMovieToAction(req, res, "FOLLOWED");
-//   });
-// };
-
-// export const removeMovieFromFavourites = async (req, res) => {
-//   await authenticateAdmin(req, res, async () => {
-//     await removeMovieFromAction(req, res, "FAVOURITES");
-//   });
-// };
-
-// export const removeMovieFromIgnored = async (req, res) => {
-//   await authenticateAdmin(req, res, async () => {
-//     await removeMovieFromAction(req, res, "IGNORES");
-//   });
-// };
-
-// export const removeMovieFromWatchlist = async (req, res) => {
-//   await authenticateAdmin(req, res, async () => {
-//     await removeMovieFromAction(req, res, "ADDED_TO_WATCHLIST");
-//   });
-// };
-
-// export const removeMovieFromFollowed = async (req, res) => {
-//   await authenticateAdmin(req, res, async () => {
-//     await removeMovieFromAction(req, res, "FOLLOWED");
-//   });
-// };
-
 export const addComment = async (req, res) => {
-  // await authenticateAdmin(req, res, async () => {
   await commentMovie(req, res);
   // });
 };
@@ -296,7 +166,6 @@ export const removeComment = async (req, res) => {
   const { commentId } = req.body;
   const session = driver.session();
 
-  // await authenticateAdmin(req, res, async () => {
   try {
     const query = `
                 MATCH ()-[r:COMMENTED]->()
@@ -309,13 +178,11 @@ export const removeComment = async (req, res) => {
   } finally {
     await session.close();
   }
-  // });
 };
 
 export const editComment = async (req, res) => {
   const session = driver.session();
   const { commentId, newComment } = req.body;
-  // await authenticateAdmin(req, res, async () => {
   try {
     if (!isValidateCommentReview(newComment)) {
       res.status(400).json({
@@ -344,76 +211,11 @@ export const editComment = async (req, res) => {
   } finally {
     await session.close();
   }
-  // });
 };
-
-// export const addReview = async (req, res) => {
-//   await authenticateAdmin(req, res, async () => {
-//     await rateMovie(req, res);
-//   });
-// };
-
-// export const removeReview = async (req, res) => {
-//   const { reviewId } = req.body;
-//   const session = driver.session();
-
-//   await authenticateAdmin(req, res, async () => {
-//     try {
-//       const query = `
-//                 MATCH ()-[r:REVIEWED]->()
-//                 WHERE ID(r) = $reviewId
-//                 DELETE r
-//             `;
-
-//       await session.executeWrite((tx) => tx.run(query, { reviewId }));
-//       res.json({ message: "Review removed successfully" });
-//     } finally {
-//       await session.close();
-//     }
-//   });
-// };
-
-// export const editReview = async (req, res) => {
-//   const session = driver.session();
-//   const { reviewId, newRating, newReview } = req.body;
-
-//   await authenticateAdmin(req, res, async () => {
-//     try {
-//       if (!isValidReview(newReview)) {
-//         res.status(400).json({
-//           error:
-//             "Invalid review. Please provide a review with a maximum length of 200 characters.",
-//         });
-//         return;
-//       }
-
-//       const query = `
-//                 MATCH ()-[r:REVIEWED]->()
-//                 WHERE ID(r) = $reviewId
-//                 SET r.rating = $newRating, r.review = $newReview
-//                 RETURN r
-//             `;
-
-//       const result = await session.executeWrite((tx) =>
-//         tx.run(query, {
-//           reviewId,
-//           newRating,
-//           newReview,
-//         })
-//       );
-
-//       const updatedReview = result.records[0].get("r").properties;
-//       res.json({ updatedReview });
-//     } finally {
-//       await session.close();
-//     }
-//   });
-// };
 
 export const addMovie = async (req, res) => {
   const session = driver.session();
 
-  // await authenticateAdmin(req, res, async () => {
   try {
     const {
       trailers,
@@ -522,13 +324,11 @@ export const addMovie = async (req, res) => {
   } finally {
     await session.close();
   }
-  // });
 };
 
 export const removeMovie = async (req, res) => {
   const { movieId } = req.body;
 
-  // await authenticateAdmin(req, res, async () => {
   const session = driver.session();
 
   try {
@@ -555,14 +355,12 @@ export const removeMovie = async (req, res) => {
   } finally {
     await session.close();
   }
-  // });
 };
 
 export const editMovie = async (req, res) => {
   const session = driver.session();
   console.log("będziemy edytwoać");
 
-  // await authenticateAdmin(req, res, async () => {
   try {
     const { id } = req.query;
     const {
@@ -711,7 +509,6 @@ export const editMovie = async (req, res) => {
   } finally {
     await session.close();
   }
-  // });
 };
 
 export const addMovieFromTMDB = async (req, res) => {

@@ -9,8 +9,10 @@ const UserSearch = ({ onUserSelect }) => {
   const [msg, setMsg] = useState("");
 
   const handleSearch = async () => {
+    // console.log(user.token);
     setMsg("searching...");
     try {
+      console.log(user.token);
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}admin/getUsers?username=${username}`,
         {

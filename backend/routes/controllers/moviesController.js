@@ -34,6 +34,7 @@ export const getMovies = async (req, res) => {
 };
 
 export const getPopularMovies = async (req, res) => {
+  console.log("pobieram filmy ===========================================");
   const session = driver.session();
   const { userId } = req.query;
   const query = userId

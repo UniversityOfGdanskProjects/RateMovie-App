@@ -41,7 +41,7 @@ export default function Nav() {
           </button>
         </Link>
         <Link href="/ranking">
-          <button className="small-btn">Movies Ranking</button>
+          <button className="small-btn">Ranking</button>
         </Link>
         {user && (
           <Link

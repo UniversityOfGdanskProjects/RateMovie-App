@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useContext, useRef } from "react";
+import Link from "next/link";
 import { UserContext } from "@/context/userContextProvider";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -33,6 +34,7 @@ const MovieComments = ({ movieId }) => {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
+              Authorization: `Bearer ${user.token}`,
             },
             body: JSON.stringify({
               commentId: values.commentId,
@@ -81,8 +83,8 @@ const MovieComments = ({ movieId }) => {
       }
     };
 
-    fetchComments();
-  }, [comments]);
+    if (comments.length === 0) fetchComments();
+  }, []);
 
   const formik = useFormik({
     initialValues: {
@@ -103,6 +105,7 @@ const MovieComments = ({ movieId }) => {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              Authorization: `Bearer ${user.token}`,
             },
             body: JSON.stringify({
               comment: values.comment,
@@ -132,6 +135,7 @@ const MovieComments = ({ movieId }) => {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${user.token}`,
           },
           body: JSON.stringify({ commentId }),
         }
@@ -162,7 +166,15 @@ const MovieComments = ({ movieId }) => {
 
   return (
     <div className="mt-2">
-      <h1>Movie Comments</h1>
+      <h1>Comments</h1>
+      {!user && (
+        <h2 className="border-2 rounded-lg border-slate-600 bg-pink-800 p-2 my-2 flex flex-row items-center gap-2">
+          <Link href="/login">
+            <button className="small-btn">Sign In</button>
+          </Link>
+          <p>to leave a comment!</p>
+        </h2>
+      )}
       <ul className="comments">
         {comments &&
           comments.map((comment, index) => (

@@ -14,6 +14,7 @@ const getKeycloakAdminToken = async () => {
       "Content-Type": "application/x-www-form-urlencoded",
     },
   });
+  console.log(response.data.access_token);
 
   return response.data.access_token;
 };

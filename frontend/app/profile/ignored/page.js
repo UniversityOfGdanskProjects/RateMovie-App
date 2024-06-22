@@ -13,7 +13,12 @@ export default function IgnoredPage() {
     const fetchIgnoredList = async (userId) => {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}ignored/${userId}`
+          `${process.env.NEXT_PUBLIC_API_URL}ignored/${userId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${user.token}`,
+            },
+          }
         );
         if (response.ok) {
           const data = await response.json();

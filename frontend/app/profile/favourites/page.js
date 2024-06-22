@@ -13,7 +13,12 @@ export default function FavPage() {
     const fetchList = async (list, userId) => {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}${list}/${userId}`
+          `${process.env.NEXT_PUBLIC_API_URL}${list}/${userId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${user.token}`,
+            },
+          }
         );
         if (response.ok) {
           const data = await response.json();

@@ -15,7 +15,7 @@ const SearchForm = ({ searchQuery, setSearchQuery, genres, handleSearch }) => {
           />
         </div>
         <div className="field">
-          <label>Actor's/Director's Name</label>
+          <label>Actor / Director</label>
           <input
             type="text"
             value={searchQuery.name}

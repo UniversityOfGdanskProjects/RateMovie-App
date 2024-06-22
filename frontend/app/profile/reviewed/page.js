@@ -13,7 +13,12 @@ export default function ReviewedPage() {
     const fetchReviewedList = async (userId) => {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}reviewed/${userId}`
+          `${process.env.NEXT_PUBLIC_API_URL}reviewed/${userId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${user.token}`,
+            },
+          }
         );
         if (response.ok) {
           const data = await response.json();

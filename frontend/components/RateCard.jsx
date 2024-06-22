@@ -29,6 +29,7 @@ export default function RateCard({ movieId, movie }) {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${user.token}`,
           },
           body: JSON.stringify({
             userId: user.id,
@@ -69,7 +70,14 @@ export default function RateCard({ movieId, movie }) {
     if (user) {
       try {
         const relationExists = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}${type}/${user.id}/${movieId}`
+          `${process.env.NEXT_PUBLIC_API_URL}${type}/${user.id}/${movieId}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${user.token}`,
+            },
+          }
         );
         if (relationExists.status === 204) {
           set(true);
@@ -79,6 +87,7 @@ export default function RateCard({ movieId, movie }) {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
+                Authorization: `Bearer ${user.token}`,
               },
               body: JSON.stringify({ userId: user.id }),
             }
@@ -91,11 +100,6 @@ export default function RateCard({ movieId, movie }) {
           const data = await addResponse.json();
           set(true);
 
-          if (type === "followed") {
-            console.log("dodaje do followed");
-            setFollowedMovies((prev) => [movie, ...prev]);
-          }
-
           return;
         } else {
           set(false);
@@ -103,6 +107,10 @@ export default function RateCard({ movieId, movie }) {
             `${process.env.NEXT_PUBLIC_API_URL}removeFrom${action}/${user.id}/${movieId}`,
             {
               method: "DELETE",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${user.token}`,
+              },
             }
           );
           if (removeResponse.status === 404 || removeResponse.status === 400) {
@@ -111,13 +119,6 @@ export default function RateCard({ movieId, movie }) {
           }
           const data = await removeResponse.json();
           set(false);
-          if (type === "followed") {
-            console.log("obecne followed", followedMovies);
-            console.log("usuwam z followed");
-            setFollowedMovies((prev) =>
-              prev.filter((el) => el.id !== movie.id)
-            );
-          }
           return;
         }
       } catch (error) {
@@ -137,6 +138,7 @@ export default function RateCard({ movieId, movie }) {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${user.token}`,
           },
         }
       );
@@ -159,16 +161,44 @@ export default function RateCard({ movieId, movie }) {
           const [isInReviewed, isInFav, isInIgnored, isInWatchlist] =
             await Promise.all([
               fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}review/${user.id}/${movieId}`
+                `${process.env.NEXT_PUBLIC_API_URL}review/${user.id}/${movieId}`,
+                {
+                  method: "GET",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${user.token}`,
+                  },
+                }
               ),
               fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}favourite/${user.id}/${movieId}`
+                `${process.env.NEXT_PUBLIC_API_URL}favourite/${user.id}/${movieId}`,
+                {
+                  method: "GET",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${user.token}`,
+                  },
+                }
               ),
               fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}ignored/${user.id}/${movieId}`
+                `${process.env.NEXT_PUBLIC_API_URL}ignored/${user.id}/${movieId}`,
+                {
+                  method: "GET",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${user.token}`,
+                  },
+                }
               ),
               fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}watchlist/${user.id}/${movieId}`
+                `${process.env.NEXT_PUBLIC_API_URL}watchlist/${user.id}/${movieId}`,
+                {
+                  method: "GET",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${user.token}`,
+                  },
+                }
               ),
             ]);
 
@@ -194,7 +224,7 @@ export default function RateCard({ movieId, movie }) {
       }
     };
 
-    fetchReview();
+    if (user) fetchReview();
   }, [user, movieId]);
 
   const ratingChanged = (newRating) => {

@@ -1,5 +1,4 @@
 import express from "express";
-import driver from "../db/neo4jDriver.js";
 
 import {
   getMovies,

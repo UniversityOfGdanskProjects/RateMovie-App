@@ -11,8 +11,9 @@ import keycloak from "./middleware/keycloak.js";
 
 config();
 const app = express();
-const port = process.env.SERVER_PORT;
-
+const port = process.env.BACKEND_PORT;
+const host = process.env.BACKEND_NAME;
+console.log(process.env.KEYCLOAK_URL);
 app.use(express.json());
 app.use(cors());
 app.use(keycloak.middleware());

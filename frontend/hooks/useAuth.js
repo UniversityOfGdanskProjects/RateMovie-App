@@ -13,7 +13,6 @@ const useAuth = () => {
 
       import("keycloak-js").then((KeycloakModule) => {
         const Keycloak = KeycloakModule.default;
-        console.log("secret", process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_SECRET);
         const client = new Keycloak({
           url: process.env.NEXT_PUBLIC_KEYCLOAK_URL,
           realm: process.env.NEXT_PUBLIC_KEYCLOAK_REALM,
@@ -24,7 +23,8 @@ const useAuth = () => {
             onLoad: "login-required",
           })
           .then((authenticated) => {
-            console.log("tu token", token);
+            // console.log("auth", authenticated);
+            // console.log("tu token", client.token);
             // console.log(client);
             setKeycloak(client);
             setAuthenticated(authenticated);

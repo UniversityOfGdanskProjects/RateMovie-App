@@ -1,5 +1,4 @@
 import driver from "../../db/neo4jDriver.js";
-import { config } from "dotenv";
 
 export const getMovieRanking = async (req, res) => {
   const session = driver.session();
@@ -25,36 +24,6 @@ export const getMovieRanking = async (req, res) => {
   } catch (error) {
     console.error("Error retrieving popular movies:", error);
     res.status(500).json({ error: "Internal Server Error" });
-  } finally {
-    await session.close();
-  }
-};
-
-export const getUsersRanking = async (req, res) => {
-  const session = driver.session();
-  try {
-    const result = await session.executeRead((tx) =>
-      tx.run(`
-            MATCH (u:User)-[r:REVIEWED]-(m:Movie)
-            RETURN u, COUNT(r) as activity
-            ORDER BY activity DESC
-        `)
-    );
-
-    const data = result.records.map((record) => {
-      const user = record.get("u").properties;
-      const activity = record.get("activity");
-
-      return {
-        ...user,
-        activity,
-      };
-    });
-
-    res.status(200).json(data);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Internal Server Error");
   } finally {
     await session.close();
   }
