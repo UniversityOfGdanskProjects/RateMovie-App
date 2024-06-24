@@ -16,16 +16,13 @@ const useAuth = () => {
         const client = new Keycloak({
           url: process.env.NEXT_PUBLIC_KEYCLOAK_URL,
           realm: process.env.NEXT_PUBLIC_KEYCLOAK_REALM,
-          clientId: process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT,
+          clientId: process.env.NEXT_PUBLIC_KEYCLOAK_PUBLIC_CLIENT,
         });
         client
           .init({
             onLoad: "login-required",
           })
           .then((authenticated) => {
-            // console.log("auth", authenticated);
-            // console.log("tu token", client.token);
-            // console.log(client);
             setKeycloak(client);
             setAuthenticated(authenticated);
             setToken(client.token);

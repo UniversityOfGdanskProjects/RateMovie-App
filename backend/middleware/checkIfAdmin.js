@@ -5,10 +5,11 @@ export default async (req, res, next) => {
     // roles would return an array of strings
 
     const isAdmin = roles.includes("admin");
-    console.log("sprawdzam czy admin");
+    // console.log("sprawdzam czy admin");
     if (isAdmin) {
-      console.log("jest adminem");
+      // console.log("jest adminem");
       // If user has Admin role, proceed.
+      req.tokenData = tokenData;
       next();
     } else {
       // Throw error if user is not an admin

@@ -34,7 +34,7 @@ export const getMovies = async (req, res) => {
 };
 
 export const getPopularMovies = async (req, res) => {
-  console.log("pobieram filmy ===========================================");
+  // console.log("pobieram filmy ===========================================");
   const session = driver.session();
   const { userId } = req.query;
   const query = userId
@@ -107,7 +107,7 @@ export const getMovieById = async (req, res) => {
       const genres = result.records[0].get("genres")
         ? result.records[0].get("genres").map((genre) => genre.properties)
         : [];
-      console.log("tu genres", genres);
+      // console.log("tu genres", genres);
 
       const actors = result.records[0].get("actors")
         ? result.records[0].get("actors").map((actor) => ({
