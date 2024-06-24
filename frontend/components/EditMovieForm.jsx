@@ -51,6 +51,7 @@ const EditMovieForm = ({ movie, setMovie }) => {
         <>
           <h2 className="msg">Movie ID: {movie.id}</h2>
           <Formik
+            enableReinitialize
             initialValues={{
               runtime: movie.runtime || 0,
               budget: movie.budget || 0,

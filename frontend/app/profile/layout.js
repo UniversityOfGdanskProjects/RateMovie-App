@@ -22,7 +22,7 @@ export default function ProfileLayout({ children }) {
     <>
       {user && (
         <>
-          <section className="bg-slate-800 border-2 border-slate-600 rounded-lg flex items-center justify-between p-4">
+          <section className="bg-slate-800 border-2 border-slate-600 rounded-lg flex items-center justify-between p-4 my-2">
             <div className="profile border-2 border-slate-600 rounded-lg p-2 flex flex-row gap-2 items-center">
               {/* <img src="/assets/images/actor.png" width={80} /> */}
               <TbUser className="text-xl" />
