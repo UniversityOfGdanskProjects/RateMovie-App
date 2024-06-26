@@ -7,7 +7,7 @@ App includes admin panel which allows to add/edit/delete movies and users. Admin
 
 npm install - in both frontend and backend directories to install dependencies
 
-docker compose up - to start Neo4j and keycloak containers
+docker compose up - in main folder to start Neo4j and keycloak containers
 
 npm start - in the backend directory to start the server
 
