@@ -6,7 +6,7 @@ config();
 const keycloakConfig = {
   realm: process.env.KEYCLOAK_REALM,
   "auth-server-url": `${process.env.KEYCLOAK_URL}`,
-  "ssl-required": "external",
+  "ssl-required": "none",
   // resource: process.env.KEYCLOAK_CLIENT,
   resource: process.env.KEYCLOAK_CLIENT,
   "bearer-only": true,
