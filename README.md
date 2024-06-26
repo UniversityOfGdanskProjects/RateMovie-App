@@ -27,4 +27,4 @@ Env files in /frontend and /backend required to start application has been added
 In /frontend/.env TMDB_API_KEY is not declared. If you want to be able to add movies from TMDB you can get the api key here https://www.themoviedb.org/settings/api.
 
 ## Keycloak
-Keycloak runs on port 8080. To access keycloak admin console to sign in using username "admin" and password "Haslo123!!!"/
+Keycloak container runs on port 8080. To access it's admin console log in using username "admin" and password "Haslo123!!!".
