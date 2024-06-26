@@ -12,7 +12,6 @@ import keycloak from "./middleware/keycloak.js";
 config();
 const app = express();
 const port = process.env.BACKEND_PORT;
-const sraka = process.env.SRAKA;
 app.use(express.json());
 app.use(cors());
 app.use(keycloak.middleware());
@@ -25,6 +24,5 @@ app.use(rankingRoutes);
 app.use(sseRoutes);
 
 app.listen(port, () => {
-  console.log(process.env.KEYCLOAK_URL);
   console.log(`Server is running on http://localhost:${port}`);
 });

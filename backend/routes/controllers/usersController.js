@@ -8,10 +8,6 @@ export const registerUser = async (req, res) => {
   const userId = tokenData.sub;
   const username = tokenData.preferred_username;
   const roles = tokenData.realm_access.roles;
-  console.log("User ID:", userId);
-  console.log("Username:", username);
-  console.log("roles", roles);
-  // console.log("Token Data:", tokenData);
   const session = driver.session();
 
   try {
@@ -22,10 +18,8 @@ export const registerUser = async (req, res) => {
       userId
     );
     if (userExists) {
-      // jesli uzytkownik istnieje w bazie to zwracam jego dane
       return res.status(201).json({ userId, username, roles });
     }
-    // jesli usera nie ma w bazie to tworze nowy wezel
     const result = await session.run(
       "CREATE (user:User {userId: $userId}) RETURN user",
       { userId }

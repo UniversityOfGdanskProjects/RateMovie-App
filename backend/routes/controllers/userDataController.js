@@ -149,10 +149,8 @@ export const rateMovie = async (req, res) => {
 };
 
 export const commentMovie = async (req, res) => {
-  console.log("nowy komentarz");
   const movieId = req.params.movieId;
   const { userId, comment, username } = req.body;
-  console.log(userId, comment, username);
 
   const session = driver.session();
 
@@ -202,7 +200,6 @@ export const commentMovie = async (req, res) => {
     );
 
     const createdRelationship = result.records[0].get("r").properties;
-    console.log(createdRelationship);
     res.status(200).json(createdRelationship);
   } catch (error) {
     console.error(error);

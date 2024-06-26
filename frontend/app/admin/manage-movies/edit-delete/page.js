@@ -83,10 +83,6 @@ export default function EditDeleteMovie() {
             Reset
           </button>
         </div>
-        {/* {searchFormik.touched.searchMovieId &&
-          searchFormik.errors.searchMovieId && (
-            <div>{searchFormik.errors.searchMovieId}</div>
-          )} */}
       </form>
       {movie !== null && <EditMovieForm movie={movie} setMovie={setMovie} />}
     </section>

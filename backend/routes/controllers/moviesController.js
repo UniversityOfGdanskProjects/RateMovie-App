@@ -34,7 +34,6 @@ export const getMovies = async (req, res) => {
 };
 
 export const getPopularMovies = async (req, res) => {
-  // console.log("pobieram filmy ===========================================");
   const session = driver.session();
   const { userId } = req.query;
   const query = userId
@@ -107,7 +106,6 @@ export const getMovieById = async (req, res) => {
       const genres = result.records[0].get("genres")
         ? result.records[0].get("genres").map((genre) => genre.properties)
         : [];
-      // console.log("tu genres", genres);
 
       const actors = result.records[0].get("actors")
         ? result.records[0].get("actors").map((actor) => ({
@@ -126,7 +124,6 @@ export const getMovieById = async (req, res) => {
         rating_avg,
         rating_count,
       };
-      console.log(genres);
       res.json(data);
     }
   } catch (error) {
@@ -288,7 +285,6 @@ export const searchMovies = async (req, res) => {
       sortOrder,
       userId,
     });
-    // console.log(query);
 
     const result = await session.executeRead((tx) =>
       tx.run(query, {
@@ -333,9 +329,7 @@ export const getComments = async (req, res) => {
       const comment = record.get("r").properties;
       const user = record.get("u").properties;
       return { ...comment, userId: user.userId };
-      // return { ...comment, username: user.username, userId: user.userId };
     });
-    // console.log(data);
     res.json(data);
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error" });

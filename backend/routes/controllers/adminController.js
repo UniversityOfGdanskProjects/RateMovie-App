@@ -16,9 +16,6 @@ export const getUsersByUsername = async (req, res) => {
   const { username } = req.query;
   try {
     const token = await getKeycloakAdminToken();
-    // console.log("token 2", token);
-    // console.log("tu token", token);
-    // const url = `${process.env.KEYCLOAK_URL}/admin/realms/${process.env.KEYCLOAK_REALM}/users/${userId}`;
     const url = `${process.env.KEYCLOAK_URL}/admin/realms/${process.env.KEYCLOAK_REALM}/users?username=${username}`;
     const response = await axios.get(url, {
       headers: {
@@ -28,8 +25,6 @@ export const getUsersByUsername = async (req, res) => {
     });
 
     const users = response.data;
-    // const user = users[0];
-    // console.log(users);
     if (users) {
       res.status(200).json({ users });
     } else {
@@ -50,9 +45,8 @@ export const getUserById = async (req, res) => {
 
   try {
     const token = await getKeycloakAdminToken();
-    // console.log("tu token", token);
     const url = `${process.env.KEYCLOAK_URL}/admin/realms/${process.env.KEYCLOAK_REALM}/users/${userId}`;
-    // const url = `${process.env.KEYCLOAK_URL}/admin/realms/${process.env.KEYCLOAK_REALM}/users/`;
+
     const response = await axios.get(url, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -61,8 +55,6 @@ export const getUserById = async (req, res) => {
     });
 
     const user = response.data;
-    // const user = users[0];
-    // console.log(user);
     if (user) {
       res.status(200).json({ user });
     } else {
@@ -82,7 +74,6 @@ export const deleteUser = async (req, res) => {
   const { userId } = req.query;
   const token = await getKeycloakAdminToken();
   const session = driver.session();
-  // console.log(userId, "usuwamy");
 
   try {
     await session.run(
@@ -109,7 +100,6 @@ export const deleteUser = async (req, res) => {
 
 export const editUser = async (req, res) => {
   const { userId, username, email, password } = req.body;
-  // console.log(username, email, userId);
   const token = await getKeycloakAdminToken();
   const userRepresentation = {};
 
@@ -511,8 +501,6 @@ export const addMovieFromTMDB = async (req, res) => {
   const session = driver.session();
   try {
     const { movieId } = req.body;
-    console.log(movieId);
-
     if (!movieId) {
       res.status(400).json({ error: "movieId is required" });
       return;
